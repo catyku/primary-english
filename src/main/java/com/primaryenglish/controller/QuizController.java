@@ -1,11 +1,13 @@
 package com.primaryenglish.controller;
 
+import com.primaryenglish.entity.Category;
 import com.primaryenglish.entity.Vocabulary;
+import com.primaryenglish.repository.CategoryRepository;
 import com.primaryenglish.repository.VocabularyRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 
@@ -13,58 +15,42 @@ import java.util.*;
 public class QuizController {
 
     private final VocabularyRepository vocabularyRepository;
+    private final CategoryRepository categoryRepository;
 
-    public QuizController(VocabularyRepository vocabularyRepository) {
+    public QuizController(VocabularyRepository vocabularyRepository, CategoryRepository categoryRepository) {
         this.vocabularyRepository = vocabularyRepository;
+        this.categoryRepository = categoryRepository;
     }
 
-    // 頁面：聽力測驗
     @GetMapping("/quiz/listen")
-    public String listenQuizPage(@RequestParam(name = "category", required = false) Long categoryId, Model model) {
-        List<Vocabulary> allVocab = categoryId != null
-            ? vocabularyRepository.findByCategoryIdOrderByIdAsc(categoryId)
-            : vocabularyRepository.findAll();
-        model.addAttribute("vocabulariesJson", toJsonList(allVocab));
-        model.addAttribute("categoryId", categoryId);
+    public String listenQuizPage(@RequestParam(name = "category", required = false) Long categoryId,
+                                 @RequestParam(name = "grade", required = false) String grade,
+                                 Model model) {
+        List<Vocabulary> vocabularies = getVocabularies(categoryId, grade);
+        model.addAttribute("vocabularies", vocabularies);
+        model.addAttribute("quizType", "聽力測驗");
+        model.addAttribute("quizIcon", "ti-headphones");
         return "quiz-listen";
     }
 
-    // 頁面：拼字測驗
     @GetMapping("/quiz/spell")
-    public String spellQuizPage(@RequestParam(name = "category", required = false) Long categoryId, Model model) {
-        List<Vocabulary> allVocab = categoryId != null
-            ? vocabularyRepository.findByCategoryIdOrderByIdAsc(categoryId)
-            : vocabularyRepository.findAll();
-        model.addAttribute("vocabulariesJson", toJsonList(allVocab));
-        model.addAttribute("categoryId", categoryId);
+    public String spellQuizPage(@RequestParam(name = "category", required = false) Long categoryId,
+                                @RequestParam(name = "grade", required = false) String grade,
+                                Model model) {
+        List<Vocabulary> vocabularies = getVocabularies(categoryId, grade);
+        model.addAttribute("vocabularies", vocabularies);
+        model.addAttribute("quizType", "拼字測驗");
+        model.addAttribute("quizIcon", "ti-pencil");
         return "quiz-spell";
     }
 
-    // API：提交測驗結果（可擴展儲存進度）
-    @PostMapping("/api/quiz/result")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> submitQuizResult(@RequestBody Map<String, Object> result) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "ok");
-        response.put("message", "Quiz result received");
-        response.put("score", result.get("score"));
-        response.put("total", result.get("total"));
-        return ResponseEntity.ok(response);
-    }
-
-    private List<Map<String, Object>> toJsonList(List<Vocabulary> vocabularies) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        for (Vocabulary v : vocabularies) {
-            Map<String, Object> map = new LinkedHashMap<>();
-            map.put("id", v.getId());
-            map.put("english", v.getEnglish());
-            map.put("chinese", v.getChinese());
-            map.put("phonetic", v.getPhonetic());
-            map.put("exampleEn", v.getExampleEn());
-            map.put("exampleCn", v.getExampleCn());
-            map.put("categoryId", v.getCategory() != null ? v.getCategory().getId() : null);
-            list.add(map);
+    private List<Vocabulary> getVocabularies(Long categoryId, String grade) {
+        if (categoryId != null) {
+            return vocabularyRepository.findByCategoryIdOrderByIdAsc(categoryId);
+        } else if (grade != null) {
+            return vocabularyRepository.findByGradeOrderByIdAsc(grade);
+        } else {
+            return vocabularyRepository.findAll();
         }
-        return list;
     }
 }
