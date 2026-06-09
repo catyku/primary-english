@@ -10,4 +10,5 @@ import java.util.List;
 public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     List<Vocabulary> findByCategoryId(Long categoryId);
     List<Vocabulary> findByCategoryIdOrderByIdAsc(Long categoryId);
+    List<Vocabulary> findByGradeOrderByIdAsc(String grade);
 }

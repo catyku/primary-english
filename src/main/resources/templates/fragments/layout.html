@@ -29,6 +29,17 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                            <span class="nav-icon-wrap me-1"><i class="ti ti-school"></i></span>年級單字
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/vocabulary(grade='3')}"><span class="me-1">🎒</span> 國小3年級</a></li>
+                            <li><a class="dropdown-item" th:href="@{/vocabulary(grade='4')}"><span class="me-1">📚</span> 國小4年級</a></li>
+                            <li><a class="dropdown-item" th:href="@{/vocabulary(grade='5')}"><span class="me-1">✏️</span> 國小5年級</a></li>
+                            <li><a class="dropdown-item" th:href="@{/vocabulary(grade='6')}"><span class="me-1">🎓</span> 國小6年級</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                             <span class="nav-icon-wrap me-1"><i class="ti ti-device-gamepad-2"></i></span>測驗遊戲
                         </a>
                         <ul class="dropdown-menu">

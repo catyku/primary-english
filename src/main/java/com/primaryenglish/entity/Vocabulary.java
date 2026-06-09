@@ -29,13 +29,16 @@ public class Vocabulary {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(length = 10)
+    private String grade; // 國小年級: 3, 4, 5, 6
+
     @Column(length = 100)
     private String image;
 
     public Vocabulary() {}
 
     public Vocabulary(Long id, String english, String chinese, String phonetic,
-                      String exampleEn, String exampleCn, Category category, String image) {
+                      String exampleEn, String exampleCn, Category category, String grade, String image) {
         this.id = id;
         this.english = english;
         this.chinese = chinese;
@@ -43,6 +46,7 @@ public class Vocabulary {
         this.exampleEn = exampleEn;
         this.exampleCn = exampleCn;
         this.category = category;
+        this.grade = grade;
         this.image = image;
     }
 
@@ -69,4 +73,7 @@ public class Vocabulary {
 
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
+
+    public String getGrade() { return grade; }
+    public void setGrade(String grade) { this.grade = grade; }
 }

@@ -27,7 +27,9 @@ public class VocabularyController {
 
     // 頁面：單字學習
     @GetMapping("/vocabulary")
-    public String vocabularyPage(@RequestParam(name = "category", required = false) Long categoryId, Model model) {
+    public String vocabularyPage(@RequestParam(name = "category", required = false) Long categoryId,
+                                 @RequestParam(name = "grade", required = false) String grade,
+                                 Model model) {
         List<Category> categories = categoryRepository.findAllByOrderBySortOrderAsc();
         model.addAttribute("categories", categories);
 
@@ -36,6 +38,11 @@ public class VocabularyController {
             currentCategory.ifPresent(cat -> model.addAttribute("currentCategory", cat));
             List<Vocabulary> vocabularies = vocabularyRepository.findByCategoryIdOrderByIdAsc(categoryId);
             model.addAttribute("vocabularies", vocabularies);
+        } else if (grade != null) {
+            // Filter by grade - find grade categories
+            List<Vocabulary> vocabularies = vocabularyRepository.findByGradeOrderByIdAsc(grade);
+            model.addAttribute("vocabularies", vocabularies);
+            model.addAttribute("currentGrade", grade);
         } else {
             List<Vocabulary> vocabularies = vocabularyRepository.findAll();
             model.addAttribute("vocabularies", vocabularies);
