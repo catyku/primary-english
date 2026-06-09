@@ -25,7 +25,7 @@ public class SecurityConfig {
                 // 靜態資源與公開頁面
                 .requestMatchers("/", "/login", "/register", "/logout",
                                  "/vocabulary", "/quiz/**",
-                                 "/css/**", "/js/**", "/images/**",
+                                 "/css/**", "/js/**", "/images/**", "/fonts/**",
                                  "/bootstrap.min.css", "/tabler-icons.min.css", "/css/**")
                 .permitAll()
                 // API 公開
