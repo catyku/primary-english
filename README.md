@@ -2,7 +2,7 @@
 
 互動式國小英文單字學習系統，專為國小學童設計。透過**單字卡片**、**語音朗讀**、**聽力測驗**、**拼字測驗**與**個人學習進度追蹤**，讓孩子輕鬆快樂地學英文！
 
-全部 200 個單字整理自 [Prepedu 國小英文單字](https://prepedu.com/zh-hant/blog/elementary-english-vocabulary)，涵蓋 20 個生活主題。
+全部 **1,239 個單字**整理自 [Prepedu 國小英文單字](https://prepedu.com/zh-hant/blog/elementary-english-vocabulary)，涵蓋 20 個生活主題（主頁 200 個 + 內頁延伸 1,039 個）。
 
 ---
 
