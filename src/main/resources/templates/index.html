@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>首頁</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Floating decorations -->
+    <div class="float-decoration" style="top: 10%; left: 5%;">🎈</div>
+    <div class="float-decoration" style="top: 20%; right: 8%; animation-delay: 1s;">⭐</div>
+    <div class="float-decoration" style="top: 60%; left: 3%; animation-delay: 2s;">🐬</div>
+
+    <!-- Hero Section -->
+    <div class="p-5 mb-5 hero-kids rounded-5 shadow-lg position-relative overflow-hidden">
+        <div class="position-absolute top-0 end-0 p-3 opacity-25" style="font-size: 8rem;">📚</div>
+        <div class="position-absolute bottom-0 start-0 p-3 opacity-25" style="font-size: 6rem;">✨</div>
+        <div class="container-fluid py-4 position-relative">
+            <h1 class="display-4 fw-bold text-white mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                <span class="d-inline-block" style="animation: bounceIn 1s ease;">🌈</span> 歡迎來到英文單字樂園！
+            </h1>
+            <p class="col-md-8 fs-5 text-white-80">
+                這裡有豐富的國小英文單字，搭配例句與語音，讓你輕鬆學英文！
+                選擇一個主題開始學習吧 <span style="animation: wobble 2s ease-in-out infinite;">🎒</span>
+            </p>
+            <a th:href="@{/vocabulary}" class="btn btn-warning btn-lg fw-bold shadow-sm mt-3 px-4 py-2">
+                <span class="nav-icon-wrap me-1"><i class="ti ti-player-play-filled"></i></span> 開始學習
+            </a>
+        </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="d-flex align-items-center mb-4">
+        <div class="section-icon bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-3">
+            <i class="ti ti-category-2 text-primary fs-3"></i>
+        </div>
+        <h2 class="fw-bold text-primary m-0">學習主題</h2>
+    </div>
+    <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-3" th:each="cat : ${categories}">
+            <a th:href="@{/vocabulary(category=${cat.id})}" class="text-decoration-none">
+                <div class="card category-card h-100 border-0 shadow-sm overflow-hidden">
+                    <!-- Category Image -->
+                    <div class="category-img-wrapper position-relative" style="height: 120px; overflow: hidden;"
+                         th:if="${cat.image != null}">
+                        <img th:src="@{${cat.image}}" class="w-100 h-100 object-fit-cover"
+                             th:alt="${cat.name}" style="object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2"
+                             style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
+                            <span class="badge bg-white text-dark fw-bold">
+                                <i th:class="'ti ' + ${cat.icon} + ' me-1'"></i>
+                                <span th:text="${cat.name}">動物</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body text-center py-4" th:classappend="${cat.image != null} ? 'pt-3' : ''">
+                        <div class="category-icon mb-2" th:if="${cat.image == null}">
+                            <i th:class="'ti ' + ${cat.icon}"></i>
+                        </div>
+                        <h5 class="card-title fw-bold mb-1 text-dark" th:text="${cat.name}">動物</h5>
+                        <small class="text-muted fw-medium" th:text="${cat.nameEn}">Animals</small>
+                        <div class="mt-2">
+                            <span class="badge bg-primary-soft text-primary">
+                                <i class="ti ti-bookmark me-1"></i>開始學習
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Quiz Section -->
+    <div class="mt-5">
+        <div class="d-flex align-items-center mb-4">
+            <div class="section-icon bg-success-soft rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="ti ti-device-gamepad-2 text-success fs-3"></i>
+            </div>
+            <h2 class="fw-bold text-success m-0">挑戰測驗</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <a th:href="@{/quiz/listen}" class="text-decoration-none">
+                    <div class="card quiz-card h-100 border-0 shadow-sm quiz-listen-bg">
+                        <div class="card-body text-center py-4">
+                            <div class="quiz-emoji mb-3">🎧</div>
+                            <h4 class="card-title fw-bold text-white">聽力測驗</h4>
+                            <p class="text-white-75">聽到單字後，選出正確的中文意思！</p>
+                            <button class="btn btn-light fw-bold text-info">
+                                <span class="nav-icon-wrap me-1"><i class="ti ti-player-play-filled"></i></span>開始挑戰
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a th:href="@{/quiz/spell}" class="text-decoration-none">
+                    <div class="card quiz-card h-100 border-0 shadow-sm quiz-spell-bg">
+                        <div class="card-body text-center py-4">
+                            <div class="quiz-emoji mb-3">✏️</div>
+                            <h4 class="card-title fw-bold text-white">拼字測驗</h4>
+                            <p class="text-white-75">聽到單字後，拼出正確的英文！</p>
+                            <button class="btn btn-light fw-bold text-warning">
+                                <span class="nav-icon-wrap me-1"><i class="ti ti-player-play-filled"></i></span>開始挑戰
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

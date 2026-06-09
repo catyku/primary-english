@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>拼字測驗</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-warning">✏️ 拼字測驗</h2>
+        <p class="text-muted">聽到單字後，輸入正確的英文拼字！</p>
+    </div>
+
+    <!-- Quiz Container -->
+    <div id="quiz-container" class="quiz-wrapper mx-auto" style="max-width: 500px;">
+
+        <!-- Start Screen -->
+        <div id="quiz-start" class="text-center py-5">
+            <div class="display-1 mb-4">✏️</div>
+            <p class="fs-5 mb-4">準備好挑戰你的拼字能力了嗎？<br>共 5 題，聽到單字後拼出正確答案！</p>
+            <button class="btn btn-warning btn-lg fw-bold" onclick="startSpellQuiz()">
+                <span class="nav-icon-wrap me-1"><i class="ti ti-player-play-filled"></i></span> 開始測驗
+            </button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="quiz-question" class="d-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-4">
+                    <!-- Progress -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-primary" id="spell-question-number">第 1 題 / 共 5 題</span>
+                        <span class="badge bg-success" id="spell-score-display">得分：0</span>
+                    </div>
+                    <div class="progress mb-4">
+                        <div id="spell-progress-bar" class="progress-bar bg-warning" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Audio Button -->
+                    <button id="spell-play-btn" class="btn btn-primary btn-lg rounded-circle mb-3 position-relative"
+                            style="width: 90px; height: 90px;">
+                        <i class="ti ti-volume fs-1"></i>
+                    </button>
+                    <p class="text-muted"><span class="nav-icon-wrap me-1"><i class="ti ti-click"></i></span>點擊播放單字語音</p>
+
+                    <!-- Input -->
+                    <div class="mt-3">
+                        <input type="text" id="spell-input"
+                               class="form-control form-control-lg text-center fw-bold"
+                               placeholder="✏️ 輸入英文單字..."
+                               autocomplete="off"
+                               style="font-size: 1.5rem;">
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-success fw-bold" onclick="checkSpellAnswer()">
+                            <span class="nav-icon-wrap me-1"><i class="ti ti-check"></i></span>確認答案
+                        </button>
+                    </div>
+
+                    <!-- Hint -->
+                    <div id="spell-hint" class="mt-3 text-muted small"></div>
+
+                    <!-- Feedback -->
+                    <div id="spell-feedback" class="mt-3 fw-bold fs-5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="quiz-result" class="d-none text-center py-5">
+            <div class="display-1 mb-3" id="spell-result-emoji">🏆</div>
+            <h3 class="fw-bold" id="spell-result-title">測驗完成！</h3>
+            <p class="fs-4">
+                你的得分：<span class="fw-bold text-primary" id="spell-final-score">0</span>
+                /<span id="spell-final-total">5</span>
+            </p>
+            <div id="spell-wrong-answers" class="text-start mt-4 d-none">
+                <h5 class="fw-bold text-danger">📋 錯誤檢討</h5>
+                <ul class="list-group mt-2" id="spell-wrong-list"></ul>
+            </div>
+            <div class="mt-4">
+                <button class="btn btn-primary fw-bold me-2" onclick="startSpellQuiz()">再試一次</button>
+                <a th:href="@{/vocabulary}" class="btn btn-outline-secondary">回去學習</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script layout:fragment="scripts">
+    var allVocabularies = /*[[${vocabulariesJson}]]*/ [];
+    var spellQuestions = [];
+    var spellIndex = 0;
+    var spellScore = 0;
+    var spellWrongs = [];
+
+    function startSpellQuiz() {
+        spellIndex = 0;
+        spellScore = 0;
+        spellWrongs = [];
+
+        var pool = allVocabularies.slice();
+        shuffleArray(pool);
+        spellQuestions = pool.slice(0, Math.min(5, pool.length));
+
+        document.getElementById('quiz-start').classList.add('d-none');
+        document.getElementById('quiz-result').classList.add('d-none');
+        document.getElementById('quiz-question').classList.remove('d-none');
+
+        showSpellQuestion();
+    }
+
+    function showSpellQuestion() {
+        var q = spellQuestions[spellIndex];
+        document.getElementById('spell-question-number').textContent =
+            '第 ' + (spellIndex + 1) + ' 題 / 共 ' + spellQuestions.length + ' 題';
+        document.getElementById('spell-score-display').textContent = '得分：' + spellScore;
+        document.getElementById('spell-progress-bar').style.width =
+            ((spellIndex / spellQuestions.length) * 100) + '%';
+        document.getElementById('spell-feedback').textContent = '';
+        document.getElementById('spell-feedback').className = 'mt-3 fw-bold fs-5';
+        document.getElementById('spell-input').value = '';
+        document.getElementById('spell-input').disabled = false;
+        document.getElementById('spell-input').focus();
+        document.getElementById('spell-hint').textContent = '提示：' + q.chinese;
+
+        // Auto play
+        setTimeout(function() {
+            speak(q.english, 'en-US');
+        }, 500);
+
+        document.getElementById('spell-play-btn').onclick = function() {
+            speak(q.english, 'en-US');
+        };
+    }
+
+    function checkSpellAnswer() {
+        var input = document.getElementById('spell-input');
+        var feedback = document.getElementById('spell-feedback');
+        var q = spellQuestions[spellIndex];
+        var userAnswer = input.value.trim().toLowerCase();
+        var correctAnswer = q.english.toLowerCase();
+
+        input.disabled = true;
+
+        if (userAnswer === correctAnswer) {
+            spellScore++;
+            feedback.textContent = '✅ 答對了！';
+            feedback.classList.add('text-success');
+            speak('Correct!', 'en-US');
+        } else {
+            feedback.textContent = '❌ 答錯了！正確答案是：' + q.english;
+            feedback.classList.add('text-danger');
+            spellWrongs.push(q);
+            // Read correct word
+            setTimeout(function() {
+                speak('The correct answer is ' + q.english, 'en-US');
+            }, 500);
+        }
+
+        setTimeout(function() {
+            spellIndex++;
+            if (spellIndex < spellQuestions.length) {
+                showSpellQuestion();
+            } else {
+                showSpellResult();
+            }
+        }, 2000);
+    }
+
+    function showSpellResult() {
+        document.getElementById('quiz-question').classList.add('d-none');
+        document.getElementById('quiz-result').classList.remove('d-none');
+        document.getElementById('spell-final-score').textContent = spellScore;
+        document.getElementById('spell-final-total').textContent = spellQuestions.length;
+
+        var emoji = '🏆';
+        var title = '測驗完成！';
+        if (spellScore === spellQuestions.length) {
+            emoji = '🎉';
+            title = '太棒了！全部答對！';
+        } else if (spellScore >= spellQuestions.length / 2) {
+            emoji = '👍';
+            title = '表現不錯！繼續加油！';
+        } else {
+            emoji = '💪';
+            title = '再練習一下，你一定可以！';
+        }
+        document.getElementById('spell-result-emoji').textContent = emoji;
+        document.getElementById('spell-result-title').textContent = title;
+
+        if (spellWrongs.length > 0) {
+            document.getElementById('spell-wrong-answers').classList.remove('d-none');
+            var list = document.getElementById('spell-wrong-list');
+            list.innerHTML = '';
+            spellWrongs.forEach(function(v) {
+                var li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = '<strong>' + v.english + '</strong> ' +
+                    v.phonetic + ' — ' + v.chinese +
+                    '<br><small class="text-muted">' + v.exampleEn + '</small>';
+                list.appendChild(li);
+            });
+        } else {
+            document.getElementById('spell-wrong-answers').classList.add('d-none');
+        }
+
+        submitResult(spellScore, spellQuestions.length);
+    }
+
+    function submitResult(score, total) {
+        fetch('/api/quiz/result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score: score, total: total, type: 'spell' })
+        }).catch(function() {});
+    }
+
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
+    // Enter key to submit
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('spell-input');
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkSpellAnswer();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

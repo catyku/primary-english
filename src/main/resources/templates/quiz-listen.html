@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>聽力測驗</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-info">🎧 聽力測驗</h2>
+        <p class="text-muted">聽到單字後，選出正確的中文意思！</p>
+    </div>
+
+    <!-- Quiz Container -->
+    <div id="quiz-container" class="quiz-wrapper mx-auto" style="max-width: 600px;">
+        
+        <!-- Start Screen -->
+        <div id="quiz-start" class="text-center py-5">
+            <div class="display-1 mb-4">🎧</div>
+            <p class="fs-5 mb-4">準備好挑戰你的聽力了嗎？<br>共 5 題，聽到單字後選出正確答案！</p>
+            <button class="btn btn-info btn-lg fw-bold" onclick="startQuiz()">
+                <i class="bi bi-play-fill"></i> 開始測驗
+            </button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="quiz-question" class="d-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-4">
+                    <!-- Progress -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-primary" id="question-number">第 1 題 / 共 5 題</span>
+                        <span class="badge bg-success" id="score-display">得分：0</span>
+                    </div>
+                    <div class="progress mb-4">
+                        <div id="progress-bar" class="progress-bar bg-info" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Audio Button -->
+                    <button id="play-btn" class="btn btn-primary btn-lg rounded-circle mb-3 position-relative"
+                            style="width: 90px; height: 90px;">
+                        <i class="ti ti-volume fs-1"></i>
+                    </button>
+                    <p class="text-muted"><span class="nav-icon-wrap me-1"><i class="ti ti-click"></i></span>點擊播放單字語音</p>
+
+                    <!-- Options -->
+                    <div id="options-container" class="row g-2 mt-3">
+                        <!-- Options inserted by JS -->
+                    </div>
+
+                    <!-- Feedback -->
+                    <div id="feedback" class="mt-3 fw-bold fs-5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="quiz-result" class="d-none text-center py-5">
+            <div class="display-1 mb-3" id="result-emoji">🏆</div>
+            <h3 class="fw-bold" id="result-title">測驗完成！</h3>
+            <p class="fs-4">
+                你的得分：<span class="fw-bold text-primary" id="final-score">0</span>
+                /<span id="final-total">5</span>
+            </p>
+            <div id="wrong-answers" class="text-start mt-4 d-none">
+                <h5 class="fw-bold text-danger">📋 錯誤檢討</h5>
+                <ul class="list-group mt-2" id="wrong-list"></ul>
+            </div>
+            <div class="mt-4">
+                <button class="btn btn-primary fw-bold me-2" onclick="startQuiz()">再試一次</button>
+                <a th:href="@{/vocabulary}" class="btn btn-outline-secondary">回去學習</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script layout:fragment="scripts">
+    // Quiz data injected by Thymeleaf
+    var allVocabularies = /*[[${vocabulariesJson}]]*/ [];
+    var categoryId = /*[[${categoryId}]]*/ null;
+
+    var currentQuestions = [];
+    var currentIndex = 0;
+    var score = 0;
+    var wrongAnswers = [];
+
+    function startQuiz() {
+        currentIndex = 0;
+        score = 0;
+        wrongAnswers = [];
+
+        // Shuffle and pick 5
+        var pool = allVocabularies.slice();
+        shuffleArray(pool);
+        currentQuestions = pool.slice(0, Math.min(5, pool.length));
+
+        document.getElementById('quiz-start').classList.add('d-none');
+        document.getElementById('quiz-result').classList.add('d-none');
+        document.getElementById('quiz-question').classList.remove('d-none');
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        var question = currentQuestions[currentIndex];
+        document.getElementById('question-number').textContent =
+            '第 ' + (currentIndex + 1) + ' 題 / 共 ' + currentQuestions.length + ' 題';
+        document.getElementById('score-display').textContent = '得分：' + score;
+        document.getElementById('progress-bar').style.width =
+            ((currentIndex / currentQuestions.length) * 100) + '%';
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('feedback').className = 'mt-3 fw-bold fs-5';
+
+        // Generate options (1 correct + 3 distractors from same vocab pool)
+        var options = [question];
+        var distractors = allVocabularies.filter(function(v) {
+            return v.id !== question.id;
+        });
+        shuffleArray(distractors);
+        options = options.concat(distractors.slice(0, 3));
+        shuffleArray(options);
+
+        // Render options
+        var container = document.getElementById('options-container');
+        container.innerHTML = '';
+        options.forEach(function(opt) {
+            var btn = document.createElement('button');
+            btn.className = 'btn btn-outline-primary btn-lg col-12 option-btn';
+            btn.textContent = opt.chinese;
+            btn.onclick = function() { checkAnswer(opt.id, question.id); };
+            container.appendChild(btn);
+        });
+
+        // Auto play after short delay
+        setTimeout(function() {
+            speak(question.english, 'en-US');
+        }, 500);
+
+        // Play button
+        document.getElementById('play-btn').onclick = function() {
+            speak(question.english, 'en-US');
+        };
+    }
+
+    function checkAnswer(selectedId, correctId) {
+        var feedback = document.getElementById('feedback');
+        var question = currentQuestions[currentIndex];
+
+        if (selectedId === correctId) {
+            score++;
+            feedback.textContent = '✅ 答對了！';
+            feedback.classList.add('text-success');
+            speak('Correct!', 'en-US');
+        } else {
+            feedback.textContent = '❌ 答錯了！正確答案是：' + question.chinese;
+            feedback.classList.add('text-danger');
+            wrongAnswers.push(question);
+        }
+
+        // Disable buttons
+        document.querySelectorAll('.option-btn').forEach(function(btn) {
+            btn.disabled = true;
+        });
+
+        // Next question or finish
+        setTimeout(function() {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }, 1500);
+    }
+
+    function showResult() {
+        document.getElementById('quiz-question').classList.add('d-none');
+        document.getElementById('quiz-result').classList.remove('d-none');
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('final-total').textContent = currentQuestions.length;
+
+        var emoji = '🏆';
+        var title = '測驗完成！';
+        if (score === currentQuestions.length) {
+            emoji = '🎉';
+            title = '太棒了！全部答對！';
+        } else if (score >= currentQuestions.length / 2) {
+            emoji = '👍';
+            title = '表現不錯！繼續加油！';
+        } else {
+            emoji = '💪';
+            title = '再練習一下，你一定可以！';
+        }
+        document.getElementById('result-emoji').textContent = emoji;
+        document.getElementById('result-title').textContent = title;
+
+        if (wrongAnswers.length > 0) {
+            document.getElementById('wrong-answers').classList.remove('d-none');
+            var list = document.getElementById('wrong-list');
+            list.innerHTML = '';
+            wrongAnswers.forEach(function(v) {
+                var li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = '<strong>' + v.english + '</strong> ' +
+                    v.phonetic + ' — ' + v.chinese +
+                    '<br><small class="text-muted">' + v.exampleEn + '</small>';
+                list.appendChild(li);
+            });
+        } else {
+            document.getElementById('wrong-answers').classList.add('d-none');
+        }
+
+        // Submit result to backend (optional)
+        submitResult(score, currentQuestions.length);
+    }
+
+    function submitResult(score, total) {
+        fetch('/api/quiz/result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score: score, total: total, type: 'listen' })
+        }).catch(function() {}); // Ignore errors
+    }
+
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+</script>
+
+</body>
+</html>

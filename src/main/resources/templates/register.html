@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>註冊</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- Header -->
+                <div class="text-center py-5 position-relative"
+                     style="background: linear-gradient(135deg, #ec4899 0%, #f59e0b 50%, #f97316 100%);">
+                    <div class="position-absolute top-0 start-0 p-3 opacity-25" style="font-size: 4rem;">🎉</div>
+                    <div class="position-absolute bottom-0 end-0 p-3 opacity-25" style="font-size: 3rem;">🌟</div>
+
+                    <div class="position-relative">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow"
+                             style="width: 80px; height: 80px;">
+                            <i class="ti ti-user-plus text-warning fs-1"></i>
+                        </div>
+                        <h2 class="fw-bold text-white m-0">新朋友！</h2>
+                        <p class="text-white-75 mb-0 mt-2">建立帳號開始學習 🚀</p>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body p-4 p-md-5">
+
+                    <div th:if="${error}" class="alert alert-danger rounded-3 d-flex align-items-center">
+                        <i class="ti ti-alert-circle me-2 fs-5"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <form th:action="@{/do-register}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="ti ti-user me-1 text-primary"></i>使用者名稱 *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-user text-muted"></i>
+                                </span>
+                                <input type="text" name="username" class="form-control form-control-lg bg-light border-start-0 ps-0"
+                                       required placeholder="3-20 個字元" minlength="3" maxlength="20">
+                            </div>
+                            <small class="text-muted"><i class="ti ti-info-circle me-1"></i>3-20 個字元，不含空格</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="ti ti-lock me-1 text-primary"></i>密碼 *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-lock text-muted"></i>
+                                </span>
+                                <input type="password" name="password" class="form-control form-control-lg bg-light border-start-0 ps-0"
+                                       required placeholder="至少 4 個字元" minlength="4">
+                            </div>
+                            <small class="text-muted"><i class="ti ti-shield me-1"></i>至少 4 個字元</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="ti ti-id-badge me-1 text-primary"></i>暱稱
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-smile text-muted"></i>
+                                </span>
+                                <input type="text" name="displayName" class="form-control form-control-lg bg-light border-start-0 ps-0"
+                                       placeholder="怎麼稱呼你？（選填）">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold py-3 rounded-3">
+                            <i class="ti ti-rocket me-2"></i>建立帳號
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted mb-3">已經有帳號？</p>
+                        <a th:href="@{/login}" class="btn btn-outline-primary fw-bold px-4">
+                            <i class="ti ti-login me-1"></i>直接登入
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
