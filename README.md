@@ -44,7 +44,39 @@
 - **前台即時生效**：管理後台修改後，前台單字庫與閱讀測驗立即更新
 - 僅限**已登入使用者**使用，未登入會自動導向登入頁
 
-### 🎨 活潑畫面設計
+---
+
+## 📸 畫面預覽
+
+| 首頁主題總覽 | 單字卡片學習 |
+|:---:|:---:|
+| ![首頁](./docs/screenshots/home.png) | ![單字卡片](./docs/screenshots/vocabulary.png) |
+
+| 聽力測驗 | 拼字測驗 |
+|:---:|:---:|
+| ![聽力測驗](./docs/screenshots/quiz-listen.png) | ![拼字測驗](./docs/screenshots/quiz-spell.png) |
+
+| 閱讀列表 | 閱讀答題 |
+|:---:|:---:|
+| ![閱讀列表](./docs/screenshots/reading-list.png) | ![閱讀答題](./docs/screenshots/reading-quiz.png) |
+
+| TTS 語音設定 | 登入頁面 |
+|:---:|:---:|
+| ![TTS 設定](./docs/screenshots/tts-settings.png) | ![登入](./docs/screenshots/login.png) |
+
+| 註冊頁面 | 個人儀表板 |
+|:---:|:---:|
+| ![註冊](./docs/screenshots/register.png) | ![個人儀表板](./docs/screenshots/profile.png) |
+
+| 管理後台 — 單字 | 管理後台 — 文章 |
+|:---:|:---:|
+| ![管理單字](./docs/screenshots/admin-vocab.png) | ![管理文章](./docs/screenshots/admin-article.png) |
+
+> 管理後台入口位於登入後的右上角使用者選單中。
+
+---
+
+## 🎨 活潑畫面設計
 - Bootstrap 5 + Tabler Icons（不使用 inline onclick）
 - 紫→粉漸層導航列，圓角卡片 + 陰影
 - 懸停放大動畫、閃爍星星、顏色漸層標籤
