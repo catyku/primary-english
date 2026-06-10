@@ -295,16 +295,6 @@
         return div.innerHTML;
     }
 
-    function speak(text, lang) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            var utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang || 'en-US';
-            utterance.rate = lang === 'zh-TW' ? 1.0 : 0.85;
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', initQuiz);
 </script>
 

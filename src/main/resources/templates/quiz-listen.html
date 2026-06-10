@@ -266,12 +266,8 @@
     }
 
     function speakWord() {
-        if (currentIndex < vocabularies.length && 'speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            var utterance = new SpeechSynthesisUtterance(vocabularies[currentIndex].english);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
+        if (currentIndex < vocabularies.length && vocabularies[currentIndex]) {
+            speak(vocabularies[currentIndex].english, 'en-US');
         }
     }
 
