@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title th:text="${article.title} + ' — 閱讀測驗'">閱讀測驗</title>
+    <style>
+        .article-content { line-height: 1.9; font-size: 1.15rem; color: #334155; }
+        .article-content p { margin-bottom: 1rem; }
+        .question-card { border-left: 4px solid #6366f1; }
+        .option-label { cursor: pointer; transition: all .15s; border-radius: 8px; padding: .6rem .8rem; border: 1px solid #e5e7eb; }
+        .option-label:hover { background: #f3f4f6; }
+        .form-check-input:checked + .option-label { background: #eef2ff; border-color: #6366f1; color: #4338ca; font-weight: 600; }
+        .progress-reading { height: 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Progress -->
+    <div class="progress progress-reading mb-4">
+        <div class="progress-bar bg-success" id="progressBar" style="width: 0%"></div>
+    </div>
+
+    <!-- Article Card -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-bold text-primary mb-1" th:text="${article.title}">Title</h2>
+                    <p class="text-muted mb-0" th:text="${article.titleCn}">中文標題</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge grade-badge" th:text="'國小' + ${article.grade} + '年級'">年級</span>
+                    <span class="badge"
+                          th:classappend="${article.level} == 'easy' ? 'level-badge-easy' :
+                                          (${article.level} == 'medium' ? 'level-badge-medium' : 'level-badge-hard')"
+                          th:text="${article.level} == 'easy' ? '簡單' :
+                                  (${article.level} == 'medium' ? '中等' : '困難')">難度</span>
+                </div>
+            </div>
+            <div class="article-content mb-3" th:utext="${#strings.replace(article.content, '\n', '<br>')}">
+                文章內容...
+            </div>
+            <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="speakArticle()">
+                <i class="ti ti-volume"></i> 朗讀全文
+            </button>
+            <button class="btn btn-outline-info btn-sm rounded-pill ms-2" onclick="toggleTranslation()">
+                <i class="ti ti-language"></i> 中文翻譯
+            </button>
+            <div id="translationBox" class="mt-3 p-3 bg-light rounded-3" style="display:none;">
+                <p class="text-muted mb-0" th:text="${article.contentCn}">中文翻譯</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <form id="quizForm" th:action="@{/reading/{id}/submit(id=${article.id})}" method="post">
+        <div class="row g-4">
+            <div class="col-12" th:each="q, stat : ${article.questions}">
+                <div class="card question-card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-primary-soft text-primary me-2"
+                                  th:text="'Q' + ${stat.count}">Q1</span>
+                            <span class="fw-bold" th:text="${q.question}">問題</span>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="radio"
+                                           th:name="'q_' + ${q.id}" value="A" required>
+                                    <span class="option-label flex-grow-1"
+                                          th:text="'A. ' + ${q.optionA}">A</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="radio"
+                                           th:name="'q_' + ${q.id}" value="B">
+                                    <span class="option-label flex-grow-1"
+                                          th:text="'B. ' + ${q.optionB}">B</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="radio"
+                                           th:name="'q_' + ${q.id}" value="C">
+                                    <span class="option-label flex-grow-1"
+                                          th:text="'C. ' + ${q.optionC}">C</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="radio"
+                                           th:name="'q_' + ${q.id}" value="D">
+                                    <span class="option-label flex-grow-1"
+                                          th:text="'D. ' + ${q.optionD}">D</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+            <a th:href="@{/reading}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i>回列表
+            </a>
+            <button type="submit" class="btn btn-success fw-bold px-4">
+                <i class="ti ti-send me-1"></i>提交答案
+            </button>
+        </div>
+    </form>
+
+    <!-- Submitting overlay -->
+    <div id="submitOverlay" class="text-center py-5" style="display:none;">
+        <div class="spinner-border text-success" role="status"></div>
+        <p class="mt-2 text-muted">批改中...</p>
+    </div>
+
+</div>
+
+<script layout:fragment="scripts">
+    function speakArticle() {
+        var text = document.querySelector('.article-content').innerText;
+        if (text) speak(text, 'en-US');
+    }
+    function toggleTranslation() {
+        var box = document.getElementById('translationBox');
+        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+    }
+
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.getElementById('submitOverlay').style.display = 'block';
+        document.getElementById('quizForm').style.display = 'none';
+
+        var formData = new FormData(this);
+        fetch(this.action, {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            window.location.href = '[[@{/reading/{id}/result(id=${article.id})}]]';
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('提交失敗，請重試');
+            document.getElementById('submitOverlay').style.display = 'none';
+            document.getElementById('quizForm').style.display = 'block';
+        });
+    });
+</script>
+</body>
+</html>

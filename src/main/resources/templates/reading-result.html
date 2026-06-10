@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>閱讀測驗結果</title>
+    <style>
+        .result-correct { border-left: 4px solid #22c55e !important; }
+        .result-wrong { border-left: 4px solid #ef4444 !important; }
+        .correct-badge { background: #dcfce7; color: #16a34a; }
+        .wrong-badge { background: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4 text-center">
+            <div class="display-1 mb-3"
+                 th:text="${percentage >= 80} ? '🏆' : (${percentage >= 60} ? '⭐' : '💪')">🏆</div>
+            <h2 class="fw-bold mb-2">閱讀測驗結果</h2>
+            <h3 class="text-success fw-bold mb-3"
+                th:text="${score} + ' / ' + ${total}">0 / 0</h3>
+            <div class="progress mb-3" style="height: 24px; max-width: 400px; margin: 0 auto;">
+                <div class="progress-bar fw-bold"
+                     role="progressbar"
+                     th:style="'width: ' + ${percentage} + '%'"
+                     th:classappend="${percentage >= 80} ? 'bg-success' :
+                                     (${percentage >= 60} ? 'bg-warning' : 'bg-danger')"
+                     th:text="${percentage} + '%'">0%</div>
+            </div>
+            <p class="text-muted"
+               th:text="${percentage >= 80} ? '太棒了！你是閱讀小達人！' :
+                       (${percentage >= 60} ? '表現不錯！繼續努力！' : '再多練習，你會越來越好！')"
+            ></p>
+        </div>
+    </div>
+
+    <h4 class="fw-bold mb-3"><i class="ti ti-checklist me-2"></i>詳細答案</h4>
+
+    <div class="row g-3 mb-5">
+        <div class="col-12" th:each="r, stat : ${results}">
+            <div class="card shadow-sm border-0"
+                 th:classappend="${r.isCorrect} ? 'result-correct' : 'result-wrong'">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-bold"
+                              th:text="'Q' + ${stat.count} + '. ' + ${r.question}"
+                        >Q1</span>
+                        <span class="badge"
+                              th:classappend="${r.isCorrect} ? 'correct-badge' : 'wrong-badge'"
+                              th:text="${r.isCorrect} ? '✓ 答對' : '✗ 答錯'"
+                        ></span>
+                    </div>
+                    <div class="d-flex gap-3 text-muted small"
+                         th:if="${!r.isCorrect}">
+                        <span>你的答案：<span class="fw-bold text-danger" th:text="${r.userAnswer}"></span></span>
+                        <span>正確答案：<span class="fw-bold text-success" th:text="${r.correctAnswer}"></span></span>
+                    </div>
+                    <div class="d-flex gap-3 text-muted small"
+                         th:if="${r.isCorrect}"
+003e
+                        <span>答案：<span class="fw-bold text-success" th:text="${r.correctAnswer}"></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 mb-5">
+        <a th:href="@{/reading/{id}(id=${article.id})}" class="btn btn-primary fw-bold">
+            <i class="ti ti-refresh me-1"></i>再測一次
+        </a>
+        <a th:href="@{/reading}" class="btn btn-outline-secondary">
+            <i class="ti ti-book me-1"></i>回文章列表
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

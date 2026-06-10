@@ -24,7 +24,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 靜態資源與公開頁面
                 .requestMatchers("/", "/login", "/register", "/logout",
-                                 "/vocabulary", "/quiz/**",
+                                 "/vocabulary", "/quiz/**", "/reading/**",
                                  "/css/**", "/js/**", "/images/**", "/fonts/**",
                                  "/bootstrap.min.css", "/tabler-icons.min.css", "/css/**")
                 .permitAll()
