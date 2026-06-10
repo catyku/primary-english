@@ -24,6 +24,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 靜態資源與公開頁面
                 .requestMatchers("/", "/login", "/register", "/logout",
+                                 "/do-login", "/do-register",
                                  "/vocabulary", "/quiz/**", "/reading/**",
                                  "/css/**", "/js/**", "/images/**", "/fonts/**",
                                  "/bootstrap.min.css", "/tabler-icons.min.css", "/css/**")
@@ -31,6 +32,9 @@ public class SecurityConfig {
                 // API 公開
                 .requestMatchers("/api/**")
                 .permitAll()
+                // 管理後台需登入
+                .requestMatchers("/admin/**")
+                .authenticated()
                 // 個人資料需登入
                 .requestMatchers("/profile")
                 .authenticated()

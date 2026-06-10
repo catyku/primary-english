@@ -11,4 +11,6 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     List<Vocabulary> findByCategoryId(Long categoryId);
     List<Vocabulary> findByCategoryIdOrderByIdAsc(Long categoryId);
     List<Vocabulary> findByGradeOrderByIdAsc(String grade);
+    List<Vocabulary> findAllByOrderByIdDesc();
+    List<Vocabulary> findByEnglishContainingIgnoreCaseOrChineseContaining(String english, String chinese);
 }

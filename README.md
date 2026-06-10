@@ -13,12 +13,18 @@
 - 每個單字包含：英文、中文翻譯、KK 音標、英文例句、中文翻譯
 - 分類卡片附有主題圖片，視覺豐富
 - 聲音播放：點擊 🔊 喇叭按鈕，用瀏覽器 Web Speech API 朗讀
+- **🆕 TTS 語音設定面板**：
+  - 語速調整（0.3x ~ 2.0x）
+  - 音調調整（0.5 ~ 2.0）
+  - 語音偏好（不限 / 女聲 / 男聲）
+  - 設定自動儲存於瀏覽器 localStorage
 
 ### 🎮 趣味測驗
 | 測驗 | 玩法 |
 |------|------|
 | 🎧 **聽力測驗** | 聽到單字語音後，選出正確的中文意思 |
 | ✏️ **拼字測驗** | 聽到單字語音後，輸入正確的英文拼字 |
+| 📖 **閱讀理解** | 🆕 閱讀短文後回答 5 題選擇題 |
 | 🏆 **即時回饋** | 答對/答錯有動畫與音效回饋 |
 | 📊 **錯誤檢討** | 測驗結束顯示答錯單字，方便複習 |
 
@@ -31,6 +37,12 @@
   - 🎯 完成測驗次數
   - ⭐ 平均成績（綠/黃/紅 三色標記）
   - 📋 最近測驗紀錄列表
+
+### 🛠 管理後台（🆕 登入者專用）
+- **單字管理**：新增、編輯、刪除、搜尋、主題篩選單字
+- **文章管理**：新增、編輯、刪除閱讀理解文章，可同時編輯 5 題選擇題
+- **前台即時生效**：管理後台修改後，前台單字庫與閱讀測驗立即更新
+- 僅限**已登入使用者**使用，未登入會自動導向登入頁
 
 ### 🎨 活潑畫面設計
 - Bootstrap 5 + Tabler Icons（不使用 inline onclick）
@@ -92,10 +104,12 @@ primary-english/
 │   │   └── SecurityConfig.java        # Spring Security 設定
 │   ├── entity/
 │   │   ├── Category.java                # 分類
-│   │   ├── Vocabulary.java              # 單字
-│   │   ├── User.java                    # 🆕 使用者
-│   │   ├── UserVocabProgress.java       # 🆕 單字學習進度
-│   │   └── QuizResult.java              # 🆕 測驗成績
+│   │   ├── Vocabulary.java                # 單字
+│   │   ├── Article.java                   # 🆕 閱讀文章
+│   │   ├── ReadingQuestion.java           # 🆕 閱讀題目
+│   │   ├── User.java                      # 🆕 使用者
+│   │   ├── UserVocabProgress.java         # 🆕 單字學習進度
+│   │   └── QuizResult.java                # 🆕 測驗成績
 │   ├── repository/
 │   ├── service/
 │   │   ├── UserService.java             # 🆕 BCrypt 密碼處理
@@ -105,7 +119,9 @@ primary-english/
 │       ├── HomeController.java
 │       ├── VocabularyController.java
 │       ├── QuizController.java
-│       └── UserController.java          # 🆕 登入/註冊/個人頁面
+│       ├── ReadingController.java         # 🆕 閱讀測驗
+│       ├── AdminController.java           # 🆕 管理後台
+│       └── UserController.java            # 🆕 登入/註冊/個人頁面
 ├── src/main/resources/
 │   ├── application.properties           # SQLite 設定
 │   ├── data.sql                        # 20 分類 + 200 單字
@@ -123,11 +139,19 @@ primary-english/
 │       │   └── layout.html            # 共用佈局（有導航）
 │       ├── index.html                   # 首頁/分類總覽
 │       ├── vocabulary.html              # 單字卡片
-│       ├── quiz-listen.html             # 聽力測驗
-│       ├── quiz-spell.html              # 拼字測驗
-│       ├── login.html                   # 🆕 登入
-│       ├── register.html                # 🆕 註冊
-│       └── profile.html                 # 🆕 學習儀表板
+│   │   ├── quiz-listen.html             # 聽力測驗
+│   │   ├── quiz-spell.html              # 拼字測驗
+│   │   ├── reading-list.html              # 🆕 閱讀列表
+│   │   ├── reading-quiz.html              # 🆕 閱讀答題
+│   │   ├── reading-result.html            # 🆕 閱讀結果
+│   │   ├── login.html                     # 🆕 登入
+│   │   ├── register.html                  # 🆕 註冊
+│   │   ├── profile.html                   # 🆕 學習儀表板
+│   │   └── admin/
+│   │       ├── vocab-list.html            # 🆕 單字管理列表
+│   │       ├── vocab-form.html            # 🆕 單字新增/編輯
+│   │       ├── article-list.html          # 🆕 文章管理列表
+│   │       └── article-form.html          # 🆕 文章新增/編輯
 ```
 
 ---

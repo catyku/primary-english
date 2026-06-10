@@ -4,13 +4,20 @@ import com.primaryenglish.entity.User;
 import com.primaryenglish.service.UserService;
 import com.primaryenglish.service.ProgressService;
 import com.primaryenglish.service.QuizResultService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -54,6 +61,7 @@ public class UserController {
     @PostMapping("/do-login")
     public String doLogin(@RequestParam String username,
                           @RequestParam String password,
+                          HttpServletRequest request,
                           HttpSession session,
                           RedirectAttributes redirectAttributes) {
         if (username == null || username.trim().isEmpty() ||
@@ -81,6 +89,16 @@ public class UserController {
         session.setAttribute("DISPLAY_NAME", user.getDisplayName());
         userService.updateLastLogin(user.getId());
 
+        // 設定 Spring Security Context（存入 Session 供 Filter 讀取）
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+            user.getUsername(), null,
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(auth);
+        SecurityContextHolder.setContext(securityContext);
+        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
         return "redirect:/";
     }
 
@@ -96,6 +114,7 @@ public class UserController {
     public String doRegister(@RequestParam String username,
                              @RequestParam String password,
                              @RequestParam(required = false) String displayName,
+                             HttpServletRequest request,
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
         if (username == null || username.trim().isEmpty()) {
@@ -122,11 +141,20 @@ public class UserController {
 
         User user = userService.register(cleanName, password, cleanDisplay);
 
-        // 自動登入
+        // 自動登入 + 設定 Spring Security
         session.setAttribute("USER_NAME", user.getUsername());
         session.setAttribute("USER_ID", user.getId());
         session.setAttribute("DISPLAY_NAME", user.getDisplayName());
         userService.updateLastLogin(user.getId());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+            user.getUsername(), null,
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(auth);
+        SecurityContextHolder.setContext(securityContext);
+        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
 
         return "redirect:/";
     }
