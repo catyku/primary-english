@@ -101,6 +101,7 @@
                                     <select name="apiProvider" class="form-select form-select-lg bg-light"
                                             onchange="updateDefaultModel(this.value)">
                                         <option value="">-- 請選擇 --</option>
+                                        <option value="ollama">🦙 Ollama（本地 AI）</option>
                                         <option value="openrouter">🌐 OpenRouter（免費/付費）</option>
                                         <option value="gemini">🔷 Google Gemini（免費額度）</option>
                                         <option value="openai">🤖 OpenAI（付費）</option>
@@ -139,6 +140,7 @@
 
                     <script>
                         const DEFAULT_MODELS = {
+                            'ollama': 'gemma4:e4b',
                             'openrouter': 'moonshotai/kimi-k2-6-free',
                             'gemini': 'gemini-2.0-flash-lite-001',
                             'openai': 'gpt-4o-mini',

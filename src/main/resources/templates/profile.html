@@ -102,6 +102,7 @@
                                 th:value="${user.apiProvider}"
                                 onchange="document.getElementById('defaultModelHint').textContent = DEFAULT_MODELS[this.value] || ''">
                             <option value="">-- 請選擇 --</option>
+                            <option value="ollama" th:selected="${user.apiProvider == 'ollama'}">🦙 Ollama（本地 AI）</option>
                             <option value="openrouter" th:selected="${user.apiProvider == 'openrouter'}">🌐 OpenRouter</option>
                             <option value="gemini" th:selected="${user.apiProvider == 'gemini'}">🔷 Google Gemini</option>
                             <option value="openai" th:selected="${user.apiProvider == 'openai'}">🤖 OpenAI</option>
@@ -167,6 +168,7 @@
 
     <script>
         const DEFAULT_MODELS = {
+            'ollama': 'gemma4:e4b',
             'openrouter': 'moonshotai/kimi-k2-6-free',
             'gemini': 'gemini-2.0-flash-lite-001',
             'openai': 'gpt-4o-mini',
