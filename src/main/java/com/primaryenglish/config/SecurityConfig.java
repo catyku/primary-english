@@ -23,7 +23,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // 靜態資源與公開頁面
-                .requestMatchers("/", "/login", "/register", "/logout",
+                .requestMatchers("/", "/login", "/do-login", "/register", "/logout",
                                  "/do-login", "/do-register",
                                  "/vocabulary", "/quiz/**", "/reading/**",
                                  "/css/**", "/js/**", "/images/**", "/fonts/**",
@@ -45,7 +45,7 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .loginProcessingUrl("/login")
+                .loginProcessingUrl("/do-login")
                 .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
