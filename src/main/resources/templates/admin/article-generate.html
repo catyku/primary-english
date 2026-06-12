@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>🤖 AI 生成文章 — 英文單字樂園</title>
+    <style>
+        .form-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+        .prompt-textarea { min-height: 120px; font-size: 1.1rem; }
+        .generate-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            transition: all .3s ease;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,.4);
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            color: white;
+            font-weight: bold;
+            padding: .5rem 1rem;
+            border-radius: 20px;
+            font-size: .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .example-prompt {
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .example-prompt:hover {
+            background: #e0e7ff;
+            transform: translateX(4px);
+        }
+        .spinner-border-sm { width: 1.2rem; height: 1.2rem; border-width: .15em; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <div class="section-icon bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="ti ti-sparkles text-primary fs-3"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold text-primary mb-0">🤖 AI 生成文章</h2>
+                <p class="text-muted mb-0">輸入提示詞，讓 AI 幫你寫一篇適合國小學童的英文短文 + 5 題選擇題</p>
+            </div>
+        </div>
+        <a th:href="@{/admin/articles}" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>返回文章列表
+        </a>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger rounded-3 d-flex align-items-center mb-4">
+        <i class="ti ti-alert-circle me-2 fs-5"></i>
+        <span th:text="${error}"></span>
+    </div>
+    <div th:if="${success}" class="alert alert-success rounded-3 d-flex align-items-center mb-4">
+        <i class="ti ti-check-circle me-2 fs-5"></i>
+        <span th:text="${success}"></span>
+    </div>
+
+    <!-- AI 設定狀態提示 -->
+    <div th:if="${!apiEnabled}" class="alert alert-warning rounded-3 mb-4">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-alert-triangle me-2 fs-5"></i>
+            <div>
+                <strong>⚠️ AI 文章生成未啟用</strong><br>
+                <span th:if="${!apiKeySet}">請先到「個人資料」設定你的 API Key 與供應商。</span>
+                <span th:if="${apiKeySet}">請先到「個人資料」啟用 AI 文章生成功能。</span>
+                <a th:href="@{/profile}" class="btn btn-sm btn-warning fw-bold ms-2">前往設定 →</a>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${apiEnabled} and ${apiKeySet}" class="alert alert-success rounded-3 mb-4">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-check me-2 fs-5"></i>
+            <div>
+                <strong>✅ AI 已就緒</strong>
+                <span th:if="${userProvider != null}"> — 使用 <span class="badge bg-warning text-dark" th:text="${userProvider}"></span>
+                <span th:if="${userModel != null}" th:text="'（' + ${userModel} + '）'"></span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 左側：生成表單 -->
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="card-body p-4">
+                    <form th:action="@{/admin/articles/generate}" method="post" id="generateForm">
+                        <!-- 提示詞 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold fs-5">
+                                <i class="ti ti-pencil me-1 text-primary"></i>提示詞（主題）
+                            </label>
+                            <textarea name="prompt" class="form-control prompt-textarea" required
+                                      maxlength="200" placeholder="例如：我的寵物、去公園玩、下雨天、我的夢想..."
+                                      th:text="${prompt}"></textarea>
+                            <small class="text-muted mt-1 d-block">
+                                <i class="ti ti-info-circle me-1"></i>
+                                用一句話描述你想寫的主題，AI 會生成英文短文 + 5 題選擇題
+                            </small>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <!-- 年級 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="ti ti-school me-1 text-primary"></i>適用年級
+                                </label>
+                                <select name="grade" class="form-select form-select-lg">
+                                    <option value="3" th:selected="${grade == 3}">🎒 國小 3 年級（基礎詞彙）</option>
+                                    <option value="4" th:selected="${grade == 4}">📚 國小 4 年級</option>
+                                    <option value="5" th:selected="${grade == 5}">✏️ 國小 5 年級</option>
+                                    <option value="6" th:selected="${grade == 6}">🎓 國小 6 年級（較複雜句型）</option>
+                                </select>
+                            </div>
+
+                            <!-- 難度 -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="ti ti-chart-bar me-1 text-primary"></i>難度
+                                </label>
+                                <select name="difficulty" class="form-select form-select-lg">
+                                    <option value="easy">🟢 簡單（基礎單字，短句）</option>
+                                    <option value="medium" selected>🟡 中等（常用單字，完整句）</option>
+                                    <option value="hard">🔴 困難（較多單字，複合句）</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 生成按鈕 -->
+                        <div class="d-grid">
+                            <button type="submit" class="generate-btn btn-lg" id="generateBtn">
+                                <span class="btn-text">
+                                    <i class="ti ti-sparkles me-2"></i>🚀 AI 生成文章
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    AI 正在寫作中，請稍候...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：範例提示詞 -->
+        <div class="col-lg-4">
+            <div class="card form-card">
+                <div class="card-body p-4">
+                    <div class="ai-badge mb-3">
+                        <i class="ti ti-bulb"></i>
+                        試試這些主題
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="我的寵物">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🐶</span>
+                                <div>
+                                    <div class="fw-bold">我的寵物</div>
+                                    <small class="text-muted">描述家裡的動物朋友</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="去公園玩">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🌳</span>
+                                <div>
+                                    <div class="fw-bold">去公園玩</div>
+                                    <small class="text-muted">週末戶外活動</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="下雨天">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🌧️</span>
+                                <div>
+                                    <div class="fw-bold">下雨天</div>
+                                    <small class="text-muted">天氣與心情</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="我的夢想">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🌟</span>
+                                <div>
+                                    <div class="fw-bold">我的夢想</div>
+                                    <small class="text-muted">未來想要成為什麼</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="我的家人">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">👨‍👩‍👧‍👦</span>
+                                <div>
+                                    <div class="fw-bold">我的家人</div>
+                                    <small class="text-muted">介紹家庭成員</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="我最喜歡的食物">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🍕</span>
+                                <div>
+                                    <div class="fw-bold">我最喜歡的食物</div>
+                                    <small class="text-muted">美食與味道</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 mb-2 border-0 bg-light"
+                           data-prompt="上學的一天">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🎒</span>
+                                <div>
+                                    <div class="fw-bold">上學的一天</div>
+                                    <small class="text-muted">學校生活日常</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item example-prompt rounded-3 border-0 bg-light"
+                           data-prompt="動物園之旅">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-3">🦁</span>
+                                <div>
+                                    <div class="fw-bold">動物園之旅</div>
+                                    <small class="text-muted">有趣的動物</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info rounded-3 mt-3">
+                <i class="ti ti-info-circle me-2"></i>
+                <strong>💡 小提示</strong><br>
+                AI 生成後會自動跳轉到編輯頁面，你可以檢查和修改內容後再儲存。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 點擊範例提示詞自動填入
+        document.querySelectorAll('.example-prompt').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                var prompt = this.getAttribute('data-prompt');
+                document.querySelector('textarea[name="prompt"]').value = prompt;
+            });
+        });
+
+        // 提交時顯示載入中
+        document.getElementById('generateForm').addEventListener('submit', function() {
+            var btn = document.getElementById('generateBtn');
+            btn.querySelector('.btn-text').classList.add('d-none');
+            btn.querySelector('.btn-loading').classList.remove('d-none');
+            btn.disabled = true;
+        });
+    </script>
+
+</div>
+</body>
+</html>

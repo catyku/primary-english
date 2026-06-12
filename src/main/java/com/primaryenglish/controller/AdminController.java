@@ -2,7 +2,9 @@ package com.primaryenglish.controller;
 
 import com.primaryenglish.entity.*;
 import com.primaryenglish.repository.*;
+import com.primaryenglish.service.AiGenerationService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +21,7 @@ public class AdminController {
     @Autowired private CategoryRepository categoryRepo;
     @Autowired private ArticleRepository articleRepo;
     @Autowired private ReadingQuestionRepository questionRepo;
+    @Autowired private AiGenerationService aiService;
 
     // ===================== 單字管理 =====================
 
@@ -201,6 +204,83 @@ public class AdminController {
             ra.addFlashAttribute("error", "刪除失敗：" + e.getMessage());
         }
         return "redirect:/admin/articles";
+    }
+
+    // ===================== AI 自動生成文章 =====================
+
+    @GetMapping("/articles/generate")
+    public String generateForm(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("USER");
+        model.addAttribute("article", new Article());
+        model.addAttribute("prompt", "");
+        model.addAttribute("grade", 3);
+        model.addAttribute("providers", AiGenerationService.getProviders());
+
+        if (user != null) {
+            model.addAttribute("userProvider", user.getApiProvider());
+            model.addAttribute("userModel", user.getApiModel());
+            model.addAttribute("apiEnabled", Boolean.TRUE.equals(user.getApiEnabled()));
+            model.addAttribute("apiKeySet", user.getApiKey() != null && !user.getApiKey().isBlank());
+        } else {
+            model.addAttribute("apiEnabled", false);
+            model.addAttribute("apiKeySet", false);
+        }
+        return "admin/article-generate";
+    }
+
+    @PostMapping("/articles/generate")
+    public String doGenerate(@RequestParam String prompt,
+                             @RequestParam(defaultValue = "3") int grade,
+                             @RequestParam(defaultValue = "easy") String difficulty,
+                             HttpSession session,
+                             RedirectAttributes ra) {
+        User user = (User) session.getAttribute("USER");
+        if (user == null) {
+            ra.addFlashAttribute("error", "請先登入");
+            return "redirect:/login";
+        }
+        if (!Boolean.TRUE.equals(user.getApiEnabled())) {
+            ra.addFlashAttribute("error", "請先在「個人資料」中啟用 AI 並設定 API Key");
+            return "redirect:/profile";
+        }
+        if (user.getApiKey() == null || user.getApiKey().isBlank()) {
+            ra.addFlashAttribute("error", "API Key 未設定，請在「個人資料」中設定");
+            return "redirect:/profile";
+        }
+        if (prompt == null || prompt.trim().isEmpty()) {
+            ra.addFlashAttribute("error", "請輸入提示詞（例如：我的寵物、去公園玩）");
+            return "redirect:/admin/articles/generate";
+        }
+
+        try {
+            Article article = aiService.generateArticle(user, prompt.trim(), grade, difficulty).block();
+            if (article == null || article.getContent() == null || article.getContent().isBlank()) {
+                ra.addFlashAttribute("error", "AI 生成失敗，請重試或更換提示詞");
+                return "redirect:/admin/articles/generate";
+            }
+
+            article.setGrade(String.valueOf(grade));
+            if (article.getWordCount() == null || article.getWordCount() == 0) {
+                String[] words = article.getContent().trim().split("\\s+");
+                article.setWordCount(words.length);
+            }
+            article.setTimeLimit(5);
+
+            Article saved = articleRepo.save(article);
+
+            List<ReadingQuestion> questions = new ArrayList<>(article.getQuestions());
+            for (ReadingQuestion q : questions) {
+                q.setArticle(saved);
+                questionRepo.save(q);
+            }
+
+            ra.addFlashAttribute("success", "🤖 AI 已成功生成文章「" + saved.getTitle() + "」！共 " + questions.size() + " 題，請檢查內容後儲存。");
+            return "redirect:/admin/articles/" + saved.getId() + "/edit";
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "AI 生成發生錯誤：" + e.getMessage());
+            return "redirect:/admin/articles/generate";
+        }
     }
 
     private void saveQuestions(Article article, Map<String, String> params) {

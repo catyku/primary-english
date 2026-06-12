@@ -54,4 +54,9 @@ public class UserService {
     public long getUserCount() {
         return userRepository.count();
     }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
 }

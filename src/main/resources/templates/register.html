@@ -79,10 +79,83 @@
                             </div>
                         </div>
 
+                        <!-- 🤖 AI 設定（選填） -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3" style="cursor:pointer;"
+                                 onclick="document.getElementById('aiSettings').classList.toggle('d-none')">
+                                <hr class="flex-grow-1">
+                                <span class="mx-3 text-muted fw-bold">
+                                    <i class="ti ti-sparkles me-1 text-warning"></i>AI 文章生成設定（選填）
+                                    <i class="ti ti-chevron-down ms-1"></i>
+                                </span>
+                                <hr class="flex-grow-1">
+                            </div>
+                            <div id="aiSettings" class="d-none">
+                                <div class="alert alert-info rounded-3 py-2 mb-3">
+                                    <small><i class="ti ti-info-circle me-1"></i>設定後可在文章管理中使用 AI 自動生成閱讀短文與題目。API Key 只存於你的帳號，不會上傳到 Git。</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="ti ti-brain me-1 text-warning"></i>AI 供應商
+                                    </label>
+                                    <select name="apiProvider" class="form-select form-select-lg bg-light"
+                                            onchange="updateDefaultModel(this.value)">
+                                        <option value="">-- 請選擇 --</option>
+                                        <option value="openrouter">🌐 OpenRouter（免費/付費）</option>
+                                        <option value="gemini">🔷 Google Gemini（免費額度）</option>
+                                        <option value="openai">🤖 OpenAI（付費）</option>
+                                        <option value="github">🐙 GitHub Copilot（需訂閱）</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="ti ti-key me-1 text-warning"></i>API Key
+                                    </label>
+                                    <input type="password" name="apiKey" class="form-control form-control-lg bg-light"
+                                           placeholder="sk-or-xxxxx 或 gsk_xxxxx">
+                                    <small class="text-muted">金鑰只保存在你的帳號中，不會公開</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="ti ti-settings me-1 text-warning"></i>模型名稱
+                                    </label>
+                                    <input type="text" name="apiModel" id="apiModel" class="form-control form-control-lg bg-light"
+                                           placeholder="使用預設模型">
+                                    <small class="text-muted" id="modelHint">選擇供應商後自動帶入推薦模型</small>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="apiEnabled" id="apiEnabled" value="true">
+                                    <label class="form-check-label fw-bold" for="apiEnabled">
+                                        <i class="ti ti-sparkles me-1 text-warning"></i>啟用 AI 文章生成
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold py-3 rounded-3">
                             <i class="ti ti-rocket me-2"></i>建立帳號
                         </button>
                     </form>
+
+                    <script>
+                        const DEFAULT_MODELS = {
+                            'openrouter': 'moonshotai/kimi-k2-6-free',
+                            'gemini': 'gemini-2.0-flash-lite-001',
+                            'openai': 'gpt-4o-mini',
+                            'github': 'gpt-4o'
+                        };
+                        function updateDefaultModel(provider) {
+                            const modelInput = document.getElementById('apiModel');
+                            const hint = document.getElementById('modelHint');
+                            if (DEFAULT_MODELS[provider]) {
+                                modelInput.placeholder = '預設: ' + DEFAULT_MODELS[provider];
+                                hint.textContent = '留空則使用預設模型: ' + DEFAULT_MODELS[provider];
+                            } else {
+                                modelInput.placeholder = '使用預設模型';
+                                hint.textContent = '選擇供應商後自動帶入推薦模型';
+                            }
+                        }
+                    </script>
 
                     <hr class="my-4">
 

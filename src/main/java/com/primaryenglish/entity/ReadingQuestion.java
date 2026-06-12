@@ -35,6 +35,9 @@ public class ReadingQuestion {
     @Column(name = "order_num")
     private Integer orderNum;         // 題目順序
 
+    @Column(length = 500)
+    private String explanation;       // 答案詳解
+
     public ReadingQuestion() {}
 
     public ReadingQuestion(String question, String optionA, String optionB,
@@ -74,6 +77,9 @@ public class ReadingQuestion {
 
     public Integer getOrderNum() { return orderNum; }
     public void setOrderNum(Integer orderNum) { this.orderNum = orderNum; }
+
+    public String getExplanation() { return explanation; }
+    public void setExplanation(String explanation) { this.explanation = explanation; }
 
     public String getOption(String letter) {
         switch (letter.toUpperCase()) {

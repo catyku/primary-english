@@ -87,6 +87,7 @@ public class UserController {
         session.setAttribute("USER_NAME", user.getUsername());
         session.setAttribute("USER_ID", user.getId());
         session.setAttribute("DISPLAY_NAME", user.getDisplayName());
+        session.setAttribute("USER", user);
         userService.updateLastLogin(user.getId());
 
         // 設定 Spring Security Context（存入 Session 供 Filter 讀取）
@@ -114,6 +115,10 @@ public class UserController {
     public String doRegister(@RequestParam String username,
                              @RequestParam String password,
                              @RequestParam(required = false) String displayName,
+                             @RequestParam(required = false) String apiProvider,
+                             @RequestParam(required = false) String apiKey,
+                             @RequestParam(required = false) String apiModel,
+                             @RequestParam(required = false) String apiEnabled,
                              HttpServletRequest request,
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
@@ -141,10 +146,20 @@ public class UserController {
 
         User user = userService.register(cleanName, password, cleanDisplay);
 
+        // Save AI settings
+        if (apiProvider != null && !apiProvider.isBlank()) {
+            user.setApiProvider(apiProvider.trim().toLowerCase());
+            user.setApiKey(apiKey != null ? apiKey.trim() : null);
+            user.setApiModel(apiModel != null && !apiModel.isBlank() ? apiModel.trim() : null);
+            user.setApiEnabled("true".equals(apiEnabled));
+            userService.save(user);
+        }
+
         // 自動登入 + 設定 Spring Security
         session.setAttribute("USER_NAME", user.getUsername());
         session.setAttribute("USER_ID", user.getId());
         session.setAttribute("DISPLAY_NAME", user.getDisplayName());
+        session.setAttribute("USER", user);
         userService.updateLastLogin(user.getId());
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
@@ -192,4 +207,41 @@ public class UserController {
 
         return "profile";
     }
+
+
+    @PostMapping("/profile/api")
+    public String updateApiSettings(@RequestParam(required = false) String apiProvider,
+                                    @RequestParam(required = false) String apiKey,
+                                    @RequestParam(required = false) String apiModel,
+                                    @RequestParam(required = false) String apiEnabled,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
+        String username = getCurrentUsername(session);
+        if (username == null) {
+            return "redirect:/login";
+        }
+        User user = userService.findByUsername(username).orElse(null);
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        if (apiProvider != null && !apiProvider.isBlank()) {
+            user.setApiProvider(apiProvider.trim().toLowerCase());
+        }
+        if (apiKey != null) {
+            user.setApiKey(apiKey.isBlank() ? null : apiKey.trim());
+        }
+        if (apiModel != null) {
+            user.setApiModel(apiModel.isBlank() ? null : apiModel.trim());
+        }
+        user.setApiEnabled("true".equals(apiEnabled));
+        userService.save(user);
+
+        // Update session
+        session.setAttribute("USER", user);
+
+        ra.addFlashAttribute("success", "AI 設定已更新！");
+        return "redirect:/profile";
+    }
+
 }

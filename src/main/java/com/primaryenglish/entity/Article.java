@@ -36,6 +36,9 @@ public class Article {
     @Column(name = "word_count")
     private Integer wordCount;      // Word count
 
+    @Column(name = "time_limit")
+    private Integer timeLimit = 5;  // Quiz time limit in minutes
+
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("orderNum ASC")
     private List<ReadingQuestion> questions = new ArrayList<>();
@@ -80,6 +83,9 @@ public class Article {
 
     public Integer getWordCount() { return wordCount; }
     public void setWordCount(Integer wordCount) { this.wordCount = wordCount; }
+
+    public Integer getTimeLimit() { return timeLimit; }
+    public void setTimeLimit(Integer timeLimit) { this.timeLimit = timeLimit; }
 
     public List<ReadingQuestion> getQuestions() { return questions; }
     public void setQuestions(List<ReadingQuestion> questions) { this.questions = questions; }
