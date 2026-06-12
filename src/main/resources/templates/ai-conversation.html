@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>🤖 AI 英文語音對話 — 英文單字樂園</title>
+    <style>
+        /* ===== 對話容器 ===== */
+        .chat-container {
+            max-height: 55vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding: 1rem;
+            background: linear-gradient(135deg, #fafafa 0%, #f5f3ff 100%);
+            border-radius: 1rem;
+        }
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-track { background: transparent; }
+        .chat-container::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 3px; }
+
+        /* ===== 氣泡 ===== */
+        .chat-bubble {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1rem;
+            animation: slideUp 0.4s ease forwards;
+            position: relative;
+            word-break: break-word;
+        }
+        .chat-bubble.ai {
+            background: linear-gradient(135deg, #fff 0%, #eef2ff 100%);
+            border: 2px solid #c7d2fe;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+        .chat-bubble.user {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .chat-bubble .bubble-meta {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .chat-bubble.ai .bubble-meta { color: #6366f1; }
+        .chat-bubble.user .bubble-meta { color: rgba(255,255,255,0.85); }
+
+        .chat-bubble .bubble-text {
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+        .chat-bubble.ai .bubble-text { color: #1e1b4b; }
+
+        .chat-bubble .bubble-translation {
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed #c4b5fd;
+            color: #6b7280;
+        }
+        .chat-bubble .bubble-hint {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(245, 158, 11, 0.12);
+            border-radius: 0.5rem;
+            color: #92400e;
+        }
+        .chat-bubble.user .bubble-translation,
+        .chat-bubble.user .bubble-hint { display: none; }
+
+        /* 朗讀按鈕 */
+        .speak-bubble-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(99,102,241,0.1);
+            color: #6366f1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+        }
+        .speak-bubble-btn:hover {
+            background: #6366f1;
+            color: white;
+            transform: scale(1.1);
+        }
+        .chat-bubble.user .speak-bubble-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .chat-bubble.user .speak-bubble-btn:hover {
+            background: white;
+            color: #6366f1;
+        }
+
+        /* ===== 輸入區 ===== */
+        .chat-input-area {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .chat-input {
+            flex: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .chat-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        /* 麥克風按鈕 */
+        .mic-btn {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mic-btn:hover { transform: scale(1.1); box-shadow: 0 4px 16px rgba(236,72,153,0.4); }
+        .mic-btn.recording {
+            animation: pulse-record 1.2s ease-in-out infinite;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        @keyframes pulse-record {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+        }
+
+        /* 送出按鈕 */
+        .send-btn {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { transform: scale(1.1); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* ===== 設定面板 ===== */
+        .setup-card {
+            background: linear-gradient(135deg, #fff 0%, #fdf4ff 100%);
+            border: 2px solid #e9d5ff;
+            border-radius: 1.25rem;
+        }
+        .setup-card .form-select, .setup-card .form-control {
+            border-radius: 0.75rem;
+            border: 2px solid #e5e7eb;
+        }
+        .setup-card .form-select:focus, .setup-card .form-control:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+        }
+
+        /* 開始按鈕 */
+        .start-convo-btn {
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #f59e0b 100%);
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .start-convo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(236,72,153,0.4);
+        }
+        .start-convo-btn:disabled {
+            opacity: 0.6;
+            transform: none !important;
+            cursor: not-allowed;
+        }
+
+        /* 狀態指示 */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .status-dot.loading {
+            background: #f59e0b;
+            animation: blink 1s infinite;
+        }
+        .status-dot.speaking {
+            background: #6366f1;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* 提示框 */
+        .tip-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            color: #92400e;
+        }
+
+        /* 空狀態 */
+        .empty-chat {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+        .empty-chat .empty-emoji {
+            font-size: 4rem;
+            animation: floatY 3s ease-in-out infinite;
+        }
+
+        /* 主題標籤 */
+        .topic-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #c7d2fe 0%, #e0e7ff 100%);
+            color: #4338ca;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* 載入動畫 */
+        .typing-dots {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            padding: 0.5rem 1rem;
+        }
+        .typing-dots span {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #6366f1;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- 標題 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <div class="section-icon bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-3"
+                 style="width:64px;height:64px;">
+                <span style="font-size:2rem;">🤖</span>
+            </div>
+            <div>
+                <h2 class="fw-bold text-primary mb-0">AI 英文語音對話</h2>
+                <p class="text-muted mb-0">和 AI 老師用英文聊天，主題由 AI 挑選，練習你學過的單字！</p>
+            </div>
+        </div>
+        <a th:href="@{/profile}" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>返回個人資料
+        </a>
+    </div>
+
+    <!-- 未啟用 AI 提示 -->
+    <div th:if="${!apiEnabled}" class="alert alert-warning rounded-4 mb-4">
+        <div class="d-flex align-items-center">
+            <span class="fs-1 me-3">⚠️</span>
+            <div>
+                <strong>AI 對話功能尚未啟用</strong><br>
+                請先到「個人資料」設定 AI API 供應商與金鑰，並啟用 AI 功能。
+                <a th:href="@{/profile}" class="btn btn-sm btn-warning fw-bold ms-2">前往設定 →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定面板 -->
+    <div class="card setup-card mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="ti ti-school me-1 text-primary"></i>適用年級
+                    </label>
+                    <select id="gradeSelect" class="form-select form-select-lg">
+                        <option value="3" selected>🎒 國小 3 年級</option>
+                        <option value="4">📚 國小 4 年級</option>
+                        <option value="5">✏️ 國小 5 年級</option>
+                        <option value="6">🎓 國小 6 年級</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="ti ti-chart-bar me-1 text-primary"></i>難度
+                    </label>
+                    <select id="difficultySelect" class="form-select form-select-lg">
+                        <option value="easy">🟢 簡單</option>
+                        <option value="medium" selected>🟡 中等</option>
+                        <option value="hard">🔴 困難</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end">
+                    <button id="startBtn" class="start-convo-btn" onclick="startConversation()"
+                            th:disabled="${!apiEnabled}">
+                        <i class="ti ti-player-play"></i>
+                        🚀 開始新對話
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主題標籤（對話中顯示） -->
+    <div id="topicDisplay" class="d-none mb-3">
+        <span class="topic-tag">
+            <i class="ti ti-message-circle"></i>
+            主題：<span id="topicText">---</span>
+        </span>
+        <button class="btn btn-sm btn-outline-danger ms-2 rounded-pill" onclick="endConversation()">
+            <i class="ti ti-x me-1"></i>結束對話
+        </button>
+    </div>
+
+    <!-- 提示 -->
+    <div class="tip-box mb-3 d-none" id="speechTip">
+        <i class="ti ti-info-circle me-1"></i>
+        <span id="speechTipText">按 🎤 麥克風按鈕開始說英文，說完會自動送出。也可以用鍵盤輸入後按 ➤ 送出。</span>
+    </div>
+
+    <!-- 對話區 -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-0">
+            <div id="chatContainer" class="chat-container">
+                <div class="empty-chat">
+                    <div class="empty-emoji">🎙️</div>
+                    <h4 class="fw-bold mt-3">準備好練習英文對話了嗎？</h4>
+                    <p>點「開始新對話」，AI 老師會選一個有趣的主題<br>用你已學過的單字來陪你聊天！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 輸入區 -->
+    <div class="chat-input-area" id="inputArea" style="opacity:0.5;pointer-events:none;">
+        <button id="micBtn" class="mic-btn" title="按住說話（需要瀏覽器支援語音輸入）">
+            <i class="ti ti-microphone fs-5"></i>
+        </button>
+        <input type="text" id="textInput" class="chat-input"
+               placeholder="輸入英文回答..." maxlength="500"
+               onkeydown="if(event.key==='Enter') sendMessage()">
+        <button id="sendBtn" class="send-btn" onclick="sendMessage()">
+            <i class="ti ti-send fs-5"></i>
+        </button>
+    </div>
+
+    <div class="text-center mt-2">
+        <span class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">等待開始</span>
+        </span>
+    </div>
+
+    <script th:inline="javascript">
+        /* ============ 狀態 ============ */
+        let isActive = false;
+        let isLoading = false;
+        let isRecording = false;
+        let currentTopic = '';
+        let history = [];
+        let recognition = null;
+
+        /* ============ SpeechRecognition 初始化 ============ */
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                document.getElementById('micBtn').style.display = 'none';
+                document.getElementById('speechTipText').textContent = '你的瀏覽器不支援語音輸入，請用鍵盤輸入英文回答。';
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                sendMessage();
+            };
+            recognition.onerror = function(event) {
+                console.warn('語音辨識錯誤:', event.error);
+                stopRecording();
+                if (event.error !== 'aborted') {
+                    showStatus('語音辨識失敗，請改用打字輸入', 'error');
+                }
+            };
+            recognition.onend = function() {
+                stopRecording();
+            };
+        }
+
+        function startRecording() {
+            if (!recognition) return;
+            try {
+                recognition.start();
+                isRecording = true;
+                document.getElementById('micBtn').classList.add('recording');
+                showStatus('正在聆聽... 請說英文', 'speaking');
+            } catch (e) {
+                console.warn('無法啟動語音辨識:', e);
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('micBtn').classList.remove('recording');
+            if (isActive && !isLoading) {
+                showStatus('等待你的回答...', 'ready');
+            }
+        }
+
+        // 麥克風按鈕：按住錄音（touch + mouse）
+        const micBtn = document.getElementById('micBtn');
+        micBtn.addEventListener('mousedown', startRecording);
+        micBtn.addEventListener('mouseup', function() {
+            if (recognition && isRecording) recognition.stop();
+        });
+        micBtn.addEventListener('mouseleave', function() {
+            if (recognition && isRecording) recognition.stop();
+        });
+        micBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            startRecording();
+        });
+        micBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            if (recognition && isRecording) recognition.stop();
+        });
+
+        initSpeechRecognition();
+
+        /* ============ 開始對話 ============ */
+        function startConversation() {
+            if (isLoading) return;
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const difficulty = document.getElementById('difficultySelect').value;
+
+            setLoading(true);
+            showStatus('AI 老師正在挑選主題...', 'loading');
+
+            fetch('/api/ai-conversation/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ grade: grade, difficulty: difficulty })
+            })
+            .then(r => r.json())
+            .then(data => {
+                setLoading(false);
+                if (data.error) {
+                    showStatus('錯誤: ' + data.error, 'error');
+                    return;
+                }
+
+                // 清空並啟動
+                isActive = true;
+                history = [];
+                currentTopic = data.topic || '自由對話';
+                document.getElementById('topicText').textContent = currentTopic;
+                document.getElementById('topicDisplay').classList.remove('d-none');
+                document.getElementById('speechTip').classList.remove('d-none');
+                enableInput(true);
+                clearChat();
+
+                // 顯示 AI 第一條訊息
+                addAiBubble(data.english, data.chinese, data.hint || '');
+
+                // 儲存到 history
+                history.push({ role: 'assistant', content: data.english + (data.chinese ? '\n（' + data.chinese + '）' : '') });
+
+                // 朗讀
+                if (window.speak && data.english) {
+                    window.speak(data.english, 'en-US');
+                }
+
+                showStatus('請回答 AI 老師的問題', 'ready');
+            })
+            .catch(err => {
+                setLoading(false);
+                showStatus('連線失敗: ' + err.message, 'error');
+            });
+        }
+
+        /* ============ 送出訊息 ============ */
+        function sendMessage() {
+            if (!isActive || isLoading) return;
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // 顯示使用者訊息
+            addUserBubble(text);
+            input.value = '';
+
+            // 加入 history
+            history.push({ role: 'user', content: text });
+
+            // 發送給 AI
+            setLoading(true);
+            showStatus('AI 老師正在思考...', 'loading');
+
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const difficulty = document.getElementById('difficultySelect').value;
+
+            fetch('/api/ai-conversation/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    history: history,
+                    message: text,
+                    topic: currentTopic,
+                    grade: grade,
+                    difficulty: difficulty
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                setLoading(false);
+                if (data.error) {
+                    showStatus('錯誤: ' + data.error, 'error');
+                    return;
+                }
+
+                // 顯示 AI 回應
+                addAiBubble(data.english, data.chinese, data.hint || '');
+
+                // 儲存到 history
+                history.push({ role: 'assistant', content: data.english + (data.chinese ? '\n（' + data.chinese + '）' : '') });
+
+                // 自動朗讀
+                if (window.speak && data.english) {
+                    window.speak(data.english, 'en-US');
+                }
+
+                showStatus('請繼續回答', 'ready');
+            })
+            .catch(err => {
+                setLoading(false);
+                showStatus('連線失敗: ' + err.message, 'error');
+            });
+        }
+
+        /* ============ 結束對話 ============ */
+        function endConversation() {
+            isActive = false;
+            isLoading = false;
+            history = [];
+            currentTopic = '';
+            document.getElementById('topicDisplay').classList.add('d-none');
+            document.getElementById('speechTip').classList.add('d-none');
+            enableInput(false);
+            clearChat();
+            showStatus('對話已結束，可再次開始新對話', 'ready');
+        }
+
+        /* ============ UI 操作 ============ */
+        function clearChat() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+        }
+
+        function addAiBubble(english, chinese, hint) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble ai';
+            div.innerHTML =
+                '<div class="bubble-meta">' +
+                '  <span>🤖</span><span>AI 老師</span>' +
+                '</div>' +
+                '<div class="bubble-text">' + escapeHtml(english) + '</div>' +
+                (chinese ? '<div class="bubble-translation">📝 ' + escapeHtml(chinese) + '</div>' : '') +
+                (hint ? '<div class="bubble-hint">💡 ' + escapeHtml(hint) + '</div>' : '') +
+                '<button class="speak-bubble-btn" title="朗讀" onclick="window.speak(\'' +
+                escapeJs(english) + '\', \'en-US\')">' +
+                '  <i class="ti ti-volume"></i>' +
+                '</button>';
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function addUserBubble(text) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble user';
+            div.innerHTML =
+                '<div class="bubble-meta">' +
+                '  <span>👤</span><span>我</span>' +
+                '</div>' +
+                '<div class="bubble-text">' + escapeHtml(text) + '</div>' +
+                '<button class="speak-bubble-btn" title="朗讀" onclick="window.speak(\'' +
+                escapeJs(text) + '\', \'en-US\')">' +
+                '  <i class="ti ti-volume"></i>' +
+                '</button>';
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function addTypingIndicator() {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble ai';
+            div.id = 'typingIndicator';
+            div.innerHTML =
+                '<div class="bubble-meta"><span>🤖</span><span>AI 老師</span></div>' +
+                '<div class="typing-dots"><span></span><span></span><span></span></div>';
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function enableInput(enabled) {
+            const area = document.getElementById('inputArea');
+            const input = document.getElementById('textInput');
+            const send = document.getElementById('sendBtn');
+            if (enabled) {
+                area.style.opacity = '1';
+                area.style.pointerEvents = 'auto';
+                input.focus();
+            } else {
+                area.style.opacity = '0.5';
+                area.style.pointerEvents = 'none';
+            }
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            document.getElementById('startBtn').disabled = loading || !isActive;
+            document.getElementById('sendBtn').disabled = loading;
+            document.getElementById('textInput').disabled = loading;
+            if (loading) {
+                addTypingIndicator();
+            } else {
+                removeTypingIndicator();
+            }
+        }
+
+        function showStatus(text, type) {
+            const dot = document.getElementById('statusDot');
+            const txt = document.getElementById('statusText');
+            txt.textContent = text;
+            dot.className = 'status-dot';
+            if (type === 'loading') dot.classList.add('loading');
+            else if (type === 'speaking') dot.classList.add('speaking');
+            else if (type === 'error') dot.style.background = '#ef4444';
+            else dot.style.background = '#22c55e';
+        }
+
+        /* ============ 工具 ============ */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        function escapeJs(text) {
+            return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+    </script>
+
+</div>
+</body>
+</html>

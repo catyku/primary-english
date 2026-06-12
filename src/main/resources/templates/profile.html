@@ -144,6 +144,27 @@
         </div>
     </div>
 
+    <!-- 🤖 AI 對話入口 -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4">
+            <div class="d-flex align-items-center">
+                <div class="bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-3"
+                     style="width: 48px; height: 48px;">
+                    <i class="ti ti-message-circle text-primary fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-primary m-0">🎙️ AI 英文語音對話</h4>
+            </div>
+        </div>
+        <div class="card-body px-4 pb-4">
+            <p class="text-muted">
+                和 AI 老師用英文聊天！AI 會挑選你學過單字的主題，用語音和你互動練習口說。
+            </p>
+            <a th:href="@{/ai-conversation}" class="btn btn-primary fw-bold">
+                <i class="ti ti-player-play me-1"></i>開始 AI 對話 →
+            </a>
+        </div>
+    </div>
+
     <script>
         const DEFAULT_MODELS = {
             'openrouter': 'moonshotai/kimi-k2-6-free',

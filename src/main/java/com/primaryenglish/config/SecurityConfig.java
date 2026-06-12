@@ -29,14 +29,17 @@ public class SecurityConfig {
                                  "/css/**", "/js/**", "/images/**", "/fonts/**",
                                  "/bootstrap.min.css", "/tabler-icons.min.css", "/css/**")
                 .permitAll()
-                // API 公開
+                // AI 對話 API 需登入（必須在 /api/** 之前）
+                .requestMatchers("/api/ai-conversation/**")
+                .authenticated()
+                // 其他 API 公開
                 .requestMatchers("/api/**")
                 .permitAll()
                 // 管理後台需登入
                 .requestMatchers("/admin/**")
                 .authenticated()
-                // 個人資料需登入
-                .requestMatchers("/profile")
+                // 個人資料與 AI 對話需登入
+                .requestMatchers("/profile", "/ai-conversation")
                 .authenticated()
                 .anyRequest().authenticated()
             )
