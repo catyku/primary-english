@@ -98,6 +98,7 @@ public class AiConversationService {
             case "gemini"     -> callGemini(apiKey, model, messages);
             case "openai"     -> callOpenAI(apiKey, model, messages);
             case "github"     -> callGitHubCopilot(apiKey, model, messages);
+            case "ollama"     -> callOllama(apiKey, model, messages);
             default           -> Mono.error(new RuntimeException("不支援的供應商: " + provider));
         };
     }
@@ -218,6 +219,39 @@ public class AiConversationService {
             .retrieve()
             .bodyToMono(Map.class)
             .map(this::extractContent);
+    }
+
+    private Mono<String> callOllama(String key, String model, List<Map<String, Object>> messages) {
+        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e4b";
+        String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
+
+        WebClient client = WebClient.builder()
+            .baseUrl(baseUrl + "/api")
+            .build();
+
+        Map<String, Object> body = Map.of(
+            "model", chosenModel,
+            "messages", messages,
+            "stream", false,
+            "options", Map.of("temperature", 0.85)
+        );
+
+        return client.post()
+            .uri("/chat")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .retrieve()
+            .bodyToMono(Map.class)
+            .map(r -> {
+                Object msg = r.get("message");
+                if (msg instanceof Map) {
+                    Object content = ((Map<String, Object>) msg).get("content");
+                    if (content != null) return content.toString();
+                }
+                Object content = r.get("response");
+                if (content != null) return content.toString();
+                throw new RuntimeException("Ollama 回傳格式錯誤: " + r);
+            });
     }
 
     @SuppressWarnings("unchecked")

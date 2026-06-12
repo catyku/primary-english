@@ -38,6 +38,7 @@ public class AiGenerationService {
             case "gemini"     -> callGemini(apiKey, model, systemPrompt, prompt, difficulty);
             case "openai"     -> callOpenAI(apiKey, model, systemPrompt, prompt, difficulty);
             case "github"     -> callGitHubCopilot(apiKey, model, systemPrompt, prompt, difficulty);
+            case "ollama"     -> callOllama(apiKey, model, systemPrompt, prompt, difficulty);
             default           -> Mono.error(new RuntimeException("不支援的供應商: " + provider));
         };
     }
@@ -300,9 +301,53 @@ public class AiGenerationService {
         return q;
     }
 
+    // ========== Ollama ==========
+    private Mono<Article> callOllama(String key, String model, String system, String prompt, String difficulty) {
+        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e4b";
+        String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
+
+        WebClient client = WebClient.builder()
+            .baseUrl(baseUrl + "/api")
+            .build();
+
+        Map<String, Object> body = Map.of(
+            "model", chosenModel,
+            "messages", List.of(
+                Map.of("role", "system", "content", system),
+                Map.of("role", "user", "content", prompt)
+            ),
+            "stream", false,
+            "options", Map.of("temperature", 0.8)
+        );
+
+        return client.post()
+            .uri("/chat")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(body)
+            .retrieve()
+            .bodyToMono(Map.class)
+            .map(r -> {
+                Object msg = r.get("message");
+                if (msg instanceof Map) {
+                    Object content = ((Map<String, Object>) msg).get("content");
+                    if (content != null) {
+                        return parseResponse(content.toString(), difficulty);
+                    }
+                }
+                // fallback for /api/generate format
+                Object content = r.get("response");
+                if (content != null) {
+                    return parseResponse(content.toString(), difficulty);
+                }
+                throw new RuntimeException("Ollama 回傳格式錯誤: " + r);
+            });
+    }
+
     // ========== 預設模型列表 ==========
     public static List<Map<String, String>> getProviders() {
         return List.of(
+            Map.of("id", "ollama",   "name", "🦙 Ollama (本地)",    "defaultModel", "gemma4:e4b",
+                   "url", "http://10.0.0.186:11434"),
             Map.of("id", "openrouter", "name", "🌐 OpenRouter", "defaultModel", "moonshotai/kimi-k2-6-free",
                    "url", "https://openrouter.ai/keys"),
             Map.of("id", "gemini", "name", "🔷 Google Gemini", "defaultModel", "gemini-2.0-flash-lite-001",
