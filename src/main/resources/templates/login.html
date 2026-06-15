@@ -4,24 +4,24 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>登入</title>
+    <link rel="stylesheet" th:href="@{/css/form.css}">
 </head>
 <body>
 <div layout:fragment="content">
 
-    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="row justify-content-center align-items-center form-card-wrapper">
         <div class="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4">
 
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
 
                 <!-- Header -->
-                <div class="text-center py-5 position-relative"
+                <div class="text-center py-5 position-relative form-header"
                      style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);">
-                    <div class="position-absolute top-0 start-0 p-3 opacity-25" style="font-size: 4rem;">🔐</div>
-                    <div class="position-absolute bottom-0 end-0 p-3 opacity-25" style="font-size: 3rem;">✨</div>
+                    <div class="position-absolute top-0 start-0 p-3 opacity-25 form-header-decoration-1">🔐</div>
+                    <div class="position-absolute bottom-0 end-0 p-3 opacity-25 form-header-decoration-2">✨</div>
 
                     <div class="position-relative">
-                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow"
-                             style="width: 80px; height: 80px;">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow form-icon-wrapper">
                             <i class="ti ti-login text-primary fs-1"></i>
                         </div>
                         <h2 class="fw-bold text-white m-0">歡迎回來！</h2>

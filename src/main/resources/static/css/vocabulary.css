@@ -1,0 +1,45 @@
+.section-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.category-pill {
+    border-radius: 2rem !important;
+    padding: .5rem 1rem;
+    font-weight: 600;
+}
+
+.vocab-card {
+    transition: all .3s ease;
+}
+
+.vocab-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,.1) !important;
+}
+
+.speech-btn {
+    transition: all .2s;
+}
+
+.speech-btn:hover {
+    transform: scale(1.1);
+}
+
+.vocab-image-wrapper img {
+    max-height: 120px;
+    width: auto;
+}
+
+.example-section .btn-xs {
+    --bs-btn-padding-y: .1rem;
+    --bs-btn-padding-x: .4rem;
+    --bs-btn-font-size: .75rem;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

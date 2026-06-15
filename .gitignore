@@ -44,3 +44,8 @@ FETCH_HEAD
 primary-english-1.0.0.jar
 app.pid
 test.jar
+node_modules/
+scripts/
+package.json
+package-lock.json
+temp_images

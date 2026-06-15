@@ -1,0 +1,15 @@
+.question-box {
+    border-left: 4px solid #6366f1;
+    background: #f8fafc;
+    border-radius: 0 8px 8px 0;
+}
+
+.btn-add-q {
+    background: #eef2ff;
+    color: #6366f1;
+    border: 1px dashed #c7d2fe;
+}
+
+.btn-add-q:hover {
+    background: #e0e7ff;
+}

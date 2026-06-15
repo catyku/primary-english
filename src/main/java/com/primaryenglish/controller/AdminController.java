@@ -3,9 +3,7 @@ package com.primaryenglish.controller;
 import com.primaryenglish.entity.*;
 import com.primaryenglish.repository.*;
 import com.primaryenglish.service.AiGenerationService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +15,19 @@ import java.util.*;
 @RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired private VocabularyRepository vocabRepo;
-    @Autowired private CategoryRepository categoryRepo;
-    @Autowired private ArticleRepository articleRepo;
-    @Autowired private ReadingQuestionRepository questionRepo;
-    @Autowired private AiGenerationService aiService;
+    private final VocabularyRepository vocabRepo;
+    private final CategoryRepository categoryRepo;
+    private final ArticleRepository articleRepo;
+    private final ReadingQuestionRepository questionRepo;
+    private final AiGenerationService aiService;
+
+    public AdminController(VocabularyRepository vocabRepo, CategoryRepository categoryRepo, ArticleRepository articleRepo, ReadingQuestionRepository questionRepo, AiGenerationService aiService) {
+        this.vocabRepo = vocabRepo;
+        this.categoryRepo = categoryRepo;
+        this.articleRepo = articleRepo;
+        this.questionRepo = questionRepo;
+        this.aiService = aiService;
+    }
 
     // ===================== 單字管理 =====================
 

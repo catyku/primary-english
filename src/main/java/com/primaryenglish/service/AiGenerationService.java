@@ -3,9 +3,10 @@ package com.primaryenglish.service;
 import com.primaryenglish.entity.Article;
 import com.primaryenglish.entity.User;
 import com.primaryenglish.entity.ReadingQuestion;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -17,13 +18,20 @@ import java.util.regex.Pattern;
 @Service
 public class AiGenerationService {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(AiGenerationService.class);
 
     public Mono<Article> generateArticle(User user, String prompt, int grade, String difficulty) {
+        logger.info("Starting article generation - provider: {}, model: {}, grade: {}, difficulty: {}", 
+            user != null ? user.getApiProvider() : "null", 
+            user != null ? user.getApiModel() : "null", 
+            grade, difficulty);
+        
         if (user == null || !Boolean.TRUE.equals(user.getApiEnabled())) {
+            logger.warn("Article generation failed: user is null or API not enabled");
             return Mono.error(new RuntimeException("請先在個人資料中設定 AI API Key"));
         }
         if (user.getApiProvider() == null || user.getApiKey() == null) {
+            logger.warn("Article generation failed: provider or API key not set");
             return Mono.error(new RuntimeException("API 供應商或金鑰未設定"));
         }
 
@@ -32,6 +40,7 @@ public class AiGenerationService {
         String model = user.getApiModel();
 
         String systemPrompt = buildSystemPrompt(grade, difficulty);
+        logger.debug("System prompt built for grade {}: {}", grade, systemPrompt.substring(0, Math.min(100, systemPrompt.length())));
 
         return switch (provider) {
             case "openrouter" -> callOpenRouter(apiKey, model, systemPrompt, prompt, difficulty);
@@ -39,13 +48,17 @@ public class AiGenerationService {
             case "openai"     -> callOpenAI(apiKey, model, systemPrompt, prompt, difficulty);
             case "github"     -> callGitHubCopilot(apiKey, model, systemPrompt, prompt, difficulty);
             case "ollama"     -> callOllama(apiKey, model, systemPrompt, prompt, difficulty);
-            default           -> Mono.error(new RuntimeException("不支援的供應商: " + provider));
+            default           -> {
+                logger.error("Unsupported provider: {}", provider);
+                yield Mono.error(new RuntimeException("不支援的供應商: " + provider));
+            }
         };
     }
 
     // ========== OpenRouter ==========
     private Mono<Article> callOpenRouter(String key, String model, String system, String prompt, String difficulty) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "moonshotai/kimi-k2-6-free";
+        logger.info("Calling OpenRouter API with model: {}", chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl("https://openrouter.ai/api/v1")
@@ -69,13 +82,43 @@ public class AiGenerationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("OpenRouter response received: {}", response))
+            .doOnError(error -> logger.error("OpenRouter API call failed: {}", error.getMessage(), error))
             .map(r -> parseResponse(extractContent(r), difficulty));
     }
 
     // ========== Gemini ==========
+    @SuppressWarnings("unchecked")
+    private String extractGeminiContent(Map<String, Object> response) {
+        try {
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+            if (candidates == null || candidates.isEmpty()) {
+                throw new RuntimeException("Missing 'candidates' in Gemini response");
+            }
+            Map<String, Object> candidate = candidates.get(0);
+            Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+            if (content == null) {
+                throw new RuntimeException("Missing 'content' in Gemini candidate");
+            }
+            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+            if (parts == null || parts.isEmpty()) {
+                throw new RuntimeException("Missing 'parts' in Gemini content");
+            }
+            Map<String, Object> textPart = parts.get(0);
+            String text = (String) textPart.get("text");
+            if (text == null) {
+                throw new RuntimeException("Missing 'text' in Gemini part");
+            }
+            return text;
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Invalid Gemini response structure: " + e.getMessage());
+        }
+    }
+
     private Mono<Article> callGemini(String key, String model, String system, String prompt, String difficulty) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gemini-2.0-flash-lite-001";
+        logger.info("Calling Gemini API with model: {}", chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl("https://generativelanguage.googleapis.com")
@@ -98,22 +141,16 @@ public class AiGenerationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(content)
             .retrieve()
-            .bodyToMono(Map.class)
-            .map(r -> {
-                try {
-                    List<Map> candidates = (List<Map>) r.get("candidates");
-                    Map textPart = (Map) ((List) ((Map) candidates.get(0).get("content")).get("parts")).get(0);
-                    String text = (String) textPart.get("text");
-                    return parseResponse(text, difficulty);
-                } catch (Exception e) {
-                    throw new RuntimeException("Gemini 回傳格式錯誤: " + e.getMessage());
-                }
-            });
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("Gemini response received: {}", response))
+            .doOnError(error -> logger.error("Gemini API call failed: {}", error.getMessage(), error))
+            .map(r -> parseResponse(extractGeminiContent(r), difficulty));
     }
 
     // ========== OpenAI ==========
     private Mono<Article> callOpenAI(String key, String model, String system, String prompt, String difficulty) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gpt-4o-mini";
+        logger.info("Calling OpenAI API with model: {}", chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl("https://api.openai.com/v1")
@@ -135,13 +172,16 @@ public class AiGenerationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("OpenAI response received: {}", response))
+            .doOnError(error -> logger.error("OpenAI API call failed: {}", error.getMessage(), error))
             .map(r -> parseResponse(extractContent(r), difficulty));
     }
 
     // ========== GitHub Copilot ==========
     private Mono<Article> callGitHubCopilot(String key, String model, String system, String prompt, String difficulty) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gpt-4o";
+        logger.info("Calling GitHub Copilot API with model: {}", chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl("https://api.githubcopilot.com")
@@ -164,21 +204,34 @@ public class AiGenerationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("GitHub Copilot response received: {}", response))
+            .doOnError(error -> logger.error("GitHub Copilot API call failed: {}", error.getMessage(), error))
             .map(r -> parseResponse(extractContent(r), difficulty));
     }
 
     // ========== 通用解析 ==========
     @SuppressWarnings("unchecked")
     private String extractContent(Map<String, Object> response) {
+        logger.debug("Extracting content from response: {}", response);
         // OpenAI/OpenRouter format
-        List<Map> choices = (List<Map>) response.get("choices");
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
         if (choices != null && !choices.isEmpty()) {
             Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            if (message != null) return (String) message.get("content");
+            if (message != null) {
+                String content = (String) message.get("content");
+                logger.debug("Extracted content from choices[0].message.content");
+                return content;
+            }
         }
         // Fallback
-        return String.valueOf(response.get("content") != null ? response.get("content") : response);
+        Object content = response.get("content");
+        if (content != null) {
+            logger.debug("Extracted content from response.content");
+            return String.valueOf(content);
+        }
+        logger.warn("No content found in response, returning full response as string");
+        return String.valueOf(response);
     }
 
     // ========== 提示詞 ==========
@@ -302,9 +355,31 @@ public class AiGenerationService {
     }
 
     // ========== Ollama ==========
+    @SuppressWarnings("unchecked")
+    private String extractOllamaContent(Map<String, Object> response) {
+        try {
+            Object msg = response.get("message");
+            if (msg instanceof Map) {
+                Object content = ((Map<String, Object>) msg).get("content");
+                if (content != null) {
+                    return content.toString();
+                }
+            }
+            // Fallback for /api/generate format
+            Object content = response.get("response");
+            if (content != null) {
+                return content.toString();
+            }
+            throw new RuntimeException("Ollama 回傳格式錯誤: " + response);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Invalid Ollama response structure: " + e.getMessage());
+        }
+    }
+
     private Mono<Article> callOllama(String key, String model, String system, String prompt, String difficulty) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e2b";
         String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
+        logger.info("Calling Ollama API at {} with model: {}", baseUrl, chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl(baseUrl + "/api")
@@ -325,22 +400,10 @@ public class AiGenerationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
-            .map(r -> {
-                Object msg = r.get("message");
-                if (msg instanceof Map) {
-                    Object content = ((Map<String, Object>) msg).get("content");
-                    if (content != null) {
-                        return parseResponse(content.toString(), difficulty);
-                    }
-                }
-                // fallback for /api/generate format
-                Object content = r.get("response");
-                if (content != null) {
-                    return parseResponse(content.toString(), difficulty);
-                }
-                throw new RuntimeException("Ollama 回傳格式錯誤: " + r);
-            });
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("Ollama response received: {}", response))
+            .doOnError(error -> logger.error("Ollama API call failed: {}", error.getMessage(), error))
+            .map(r -> parseResponse(extractOllamaContent(r), difficulty));
     }
 
     // ========== 預設模型列表 ==========

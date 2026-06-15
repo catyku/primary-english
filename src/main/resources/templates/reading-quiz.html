@@ -4,6 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title th:text="${article.title} + ' — 閱讀測驗'">閱讀測驗</title>
+    <link rel="stylesheet" th:href="@{/css/reading.css}">
     <style>
         .article-content { line-height: 1.9; font-size: 1.15rem; color: #334155; }
         .article-content p { margin-bottom: 1rem; }
@@ -122,37 +123,6 @@
 
 </div>
 
-<script layout:fragment="scripts">
-    function speakArticle() {
-        var text = document.querySelector('.article-content').innerText;
-        if (text) speak(text, 'en-US');
-    }
-    function toggleTranslation() {
-        var box = document.getElementById('translationBox');
-        box.style.display = (box.style.display === 'none') ? 'block' : 'none';
-    }
-
-    document.getElementById('quizForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        document.getElementById('submitOverlay').style.display = 'block';
-        document.getElementById('quizForm').style.display = 'none';
-
-        var formData = new FormData(this);
-        fetch(this.action, {
-            method: 'POST',
-            body: new URLSearchParams(formData)
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            window.location.href = '[[@{/reading/{id}/result(id=${article.id})}]]';
-        })
-        .catch(function(err) {
-            console.error(err);
-            alert('提交失敗，請重試');
-            document.getElementById('submitOverlay').style.display = 'none';
-            document.getElementById('quizForm').style.display = 'block';
-        });
-    });
-</script>
+<script layout:fragment="scripts" th:src="@{/js/reading-quiz.js}"></script>
 </body>
 </html>

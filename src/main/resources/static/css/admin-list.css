@@ -1,0 +1,49 @@
+.admin-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+
+.admin-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.admin-table td {
+    vertical-align: middle;
+}
+
+.btn-xs {
+    padding: .2rem .5rem;
+    font-size: .8rem;
+}
+
+.article-preview {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.level-badge-easy {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+.level-badge-medium {
+    background-color: #fef9c3;
+    color: #ca8a04;
+}
+.level-badge-hard {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+.grade-badge {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+}
+
+.search-box {
+    max-width: 300px;
+}

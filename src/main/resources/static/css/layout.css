@@ -1,0 +1,131 @@
+/* TTS Setting Panel Modal Styles */
+.tts-setting-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.tts-setting-modal .modal-header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+.tts-setting-modal .modal-title {
+    color: #fff;
+    font-weight: 700;
+}
+.tts-setting-modal .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+.tts-slider-track {
+    position: relative;
+    width: 100%;
+}
+.tts-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    outline: none;
+    cursor: pointer;
+}
+.tts-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+    transition: transform .15s;
+}
+.tts-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+.tts-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+}
+.tts-value-badge {
+    min-width: 3.5rem;
+    text-align: center;
+    font-weight: 700;
+    color: #6366f1;
+    background: #eef2ff;
+    border-radius: 8px;
+    padding: .2rem .5rem;
+    font-size: .9rem;
+}
+.tts-gender-group .form-check-input:checked {
+    background-color: #6366f1;
+    border-color: #6366f1;
+}
+.tts-gender-group .form-check-label {
+    cursor: pointer;
+}
+.tts-btn-test {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+}
+.tts-btn-test:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #fff;
+}
+.tts-btn-reset {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    font-weight: 600;
+}
+.tts-btn-reset:hover {
+    background: #e5e7eb;
+}
+.nav-gear-btn {
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,.85);
+    padding: .375rem .5rem;
+    border-radius: 8px;
+    transition: all .2s;
+}
+.nav-gear-btn:hover {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+}
+
+.navbar-gradient {
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+}
+
+.footer-glow {
+    background: #111827;
+    box-shadow: 0 -5px 20px rgba(99, 102, 241, 0.2);
+}
+
+.footer-glow i {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.footer-glow span {
+    animation: floatY 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}

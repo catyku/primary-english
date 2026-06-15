@@ -4,13 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>文章管理</title>
-    <style>
-        .admin-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
-        .admin-table th { background: #f8fafc; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
-        .admin-table td { vertical-align: middle; }
-        .btn-xs { padding: .2rem .5rem; font-size: .8rem; }
-        .article-preview { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin-list.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -89,7 +83,7 @@
                                 </a>
                                 <form th:action="@{/admin/articles/{id}/delete(id=${a.id})}" method="post"
                                       class="d-inline"
-                                      onsubmit="return confirm('確定要刪除這篇文章嗎？文章的所有題目也會一併刪除。');">
+                                      onsubmit="return confirmDelete();">
                                     <button type="submit" class="btn btn-outline-danger btn-xs">
                                         <i class="ti ti-trash"></i> 刪除
                                     </button>
@@ -98,8 +92,10 @@
                         </tr>
                         <tr th:if="${articles == null || articles.isEmpty()}">
                             <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="ti ti-inbox display-4"></i>
-                                <p class="mt-2">沒有閱讀文章</p>
+                                <div class="empty-state">
+                                    <i class="ti ti-inbox display-1"></i>
+                                    <p class="mt-3 fs-5">目前沒有文章</p>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -109,5 +105,8 @@
     </div>
 
 </div>
+
+<script layout:fragment="scripts" th:src="@{/js/article-list.js}"></script>
+
 </body>
 </html>

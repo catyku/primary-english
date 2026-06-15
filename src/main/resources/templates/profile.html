@@ -4,6 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>我的學習紀錄</title>
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -12,12 +13,11 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
         <div class="card-body p-4 position-relative">
             <!-- Trophy background decoration -->
-            <div class="position-absolute top-0 end-0 p-3 opacity-25" style="font-size: 5rem;">🏆</div>
+            <div class="position-absolute top-0 end-0 p-3 opacity-25 trophy-decoration">🏆</div>
 
             <div class="d-flex align-items-center position-relative">
                 <!-- Avatar -->
-                <div class="bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-4 flex-shrink-0 shadow-sm"
-                     style="width: 80px; height: 80px;">
+                <div class="bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-4 flex-shrink-0 shadow-sm avatar-circle">
                     <i class="ti ti-user-circle text-primary fs-1"></i>
                 </div>
 
@@ -39,8 +39,7 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body text-center py-4">
-                    <div class="bg-primary-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                         style="width: 64px; height: 64px;">
+                    <div class="bg-primary-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3 stat-icon-wrapper">
                         <span style="font-size: 2rem;">📚</span>
                     </div>
                     <h2 class="fw-bold text-primary m-0" th:text="${learnedCount}">0</h2>
@@ -52,8 +51,7 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body text-center py-4">
-                    <div class="bg-success-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                         style="width: 64px; height: 64px;">
+                    <div class="bg-success-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3 stat-icon-wrapper">
                         <span style="font-size: 2rem;">🎯</span>
                     </div>
                     <h2 class="fw-bold text-success m-0" th:text="${totalQuizCount}">0</h2>
@@ -65,8 +63,7 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body text-center py-4">
-                    <div class="bg-warning-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                         style="width: 64px; height: 64px;">
+                    <div class="bg-warning-soft rounded-circle d-inline-flex align-items-center justify-content-center mb-3 stat-icon-wrapper">
                         <span style="font-size: 2rem;">⭐</span>
                     </div>
                     <h2 class="fw-bold text-warning m-0" th:text="${avgScore} + '%'">0%</h2>
@@ -80,8 +77,7 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-transparent border-0 pt-4 px-4">
             <div class="d-flex align-items-center">
-                <div class="bg-warning-soft rounded-circle d-flex align-items-center justify-content-center me-3"
-                     style="width: 48px; height: 48px;">
+                <div class="bg-warning-soft rounded-circle d-flex align-items-center justify-content-center me-3 ai-header-icon-wrapper">
                     <i class="ti ti-sparkles text-warning fs-4"></i>
                 </div>
                 <h4 class="fw-bold text-warning m-0">🤖 AI 文章生成設定</h4>
@@ -99,8 +95,7 @@
                             <i class="ti ti-brain me-1 text-warning"></i>供應商
                         </label>
                         <select name="apiProvider" class="form-select bg-light"
-                                th:value="${user.apiProvider}"
-                                onchange="document.getElementById('defaultModelHint').textContent = DEFAULT_MODELS[this.value] || ''">
+                                th:value="${user.apiProvider}">
                             <option value="">-- 請選擇 --</option>
                             <option value="ollama" th:selected="${user.apiProvider == 'ollama'}">🦙 Ollama（本地 AI）</option>
                             <option value="openrouter" th:selected="${user.apiProvider == 'openrouter'}">🌐 OpenRouter</option>
@@ -149,151 +144,25 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-transparent border-0 pt-4 px-4">
             <div class="d-flex align-items-center">
-                <div class="bg-primary-soft rounded-circle d-flex align-items-center justify-content-center me-3"
-                     style="width: 48px; height: 48px;">
-                    <i class="ti ti-message-circle text-primary fs-4"></i>
+                <div class="bg-info-soft rounded-circle d-flex align-items-center justify-content-center me-3 ai-header-icon-wrapper">
+                    <i class="ti ti-message-chatbot text-info fs-4"></i>
                 </div>
-                <h4 class="fw-bold text-primary m-0">🎙️ AI 英文語音對話</h4>
+                <h4 class="fw-bold text-info m-0">🗣️ AI 老師對話練習</h4>
             </div>
         </div>
         <div class="card-body px-4 pb-4">
-            <p class="text-muted">
-                和 AI 老師用英文聊天！AI 會挑選你學過單字的主題，用語音和你互動練習口說。
-            </p>
-            <a th:href="@{/ai-conversation}" class="btn btn-primary fw-bold">
-                <i class="ti ti-player-play me-1"></i>開始 AI 對話 →
+            <p class="text-muted">準備好跟 AI 老師練習英文了嗎？點擊下方按鈕，開啟一場有趣的對話！</p>
+            <a th:href="@{/ai/conversation}" class="btn btn-info fw-bold">
+                <i class="ti ti-arrow-right me-1"></i>開始練習
             </a>
         </div>
     </div>
 
-    <script>
-        const DEFAULT_MODELS = {
-            'ollama': 'gemma4:e2b',
-            'openrouter': 'moonshotai/kimi-k2-6-free',
-            'gemini': 'gemini-2.0-flash-lite-001',
-            'openai': 'gpt-4o-mini',
-            'github': 'gpt-4o'
-        };
-        function toggleKey() {
-            const input = document.getElementById('apiKeyInput');
-            const icon = document.getElementById('eyeIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('ti-eye', 'ti-eye-off');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('ti-eye-off', 'ti-eye');
-            }
-        }
-    </script>
-
-    <!-- Quiz Stats by Type -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4" th:if="${!quizStats.isEmpty()}">
-        <div class="card-header bg-transparent border-0 pt-4 px-4">
-            <div class="d-flex align-items-center">
-                <div class="bg-success-soft rounded-circle d-flex align-items-center justify-content-center me-3"
-                     style="width: 48px; height: 48px;">
-                    <i class="ti ti-chart-bar text-success fs-4"></i>
-                </div>
-                <h4 class="fw-bold text-success m-0">測驗類型統計</h4>
-            </div>
-        </div>
-        <div class="card-body px-4 pb-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>測驗類型</th>
-                            <th class="text-center">次數</th>
-                            <th class="text-center">平均成績</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="stat : ${quizStats}">
-                            <td>
-                                <i class="ti me-1"
-                                   th:classappend="${stat[0] == 'listen'} ? 'ti-headphones text-info' : 'ti-pencil text-warning'"></i>
-                                <span th:text="${stat[0] == 'listen'} ? '聽力測驗' : '拼字測驗'"></span>
-                            </td>
-                            <td class="text-center fw-bold" th:text="${stat[1]}">0</td>
-                            <td class="text-center">
-                                <span class="badge fs-6"
-                                      th:classappend="${stat[2] >= 80} ? 'bg-success' : (${stat[2] >= 60} ? 'bg-warning text-dark' : 'bg-danger')"
-                                      th:text="${#numbers.formatDecimal(stat[2], 0, 1)} + '%'">
-                                    0%
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Quiz Results -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4" th:if="${!quizResults.isEmpty()}">
-        <div class="card-header bg-transparent border-0 pt-4 px-4">
-            <div class="d-flex align-items-center">
-                <div class="bg-info-soft rounded-circle d-flex align-items-center justify-content-center me-3"
-                     style="width: 48px; height: 48px;">
-                    <i class="ti ti-history text-info fs-4"></i>
-                </div>
-                <h4 class="fw-bold text-info m-0">最近測驗紀錄</h4>
-            </div>
-        </div>
-        <div class="card-body px-4 pb-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>日期</th>
-                            <th>類型</th>
-                            <th class="text-center">題數</th>
-                            <th class="text-center">答對</th>
-                            <th class="text-center">成績</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="result : ${quizResults}">
-                            <td th:text="${#temporals.format(result.quizDate, 'MM/dd HH:mm')}">01/01 12:00</td>
-                            <td>
-                                <span class="badge"
-                                      th:classappend="${result.quizType == 'listen'} ? 'bg-info' : 'bg-warning text-dark'"
-                                      th:text="${result.quizType == 'listen'} ? '🎧 聽力' : '✏️ 拼字'"></span>
-                            </td>
-                            <td class="text-center" th:text="${result.totalQuestions}">10</td>
-                            <td class="text-center fw-bold text-success" th:text="${result.correctCount}">8</td>
-                            <td class="text-center">
-                                <span class="badge fs-6"
-                                      th:classappend="${result.score >= 80} ? 'bg-success' : (${result.score >= 60} ? 'bg-warning text-dark' : 'bg-danger')"
-                                      th:text="${result.score} + '%'">
-                                    80%
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="text-center py-5" th:if="${quizResults.isEmpty()}">
-        <div class="card border-0 shadow-sm rounded-4 py-5">
-            <div class="card-body">
-                <div style="font-size: 4rem;">📋</div>
-                <h4 class="fw-bold text-muted mt-3">還沒有任何測驗紀錄</h4>
-                <p class="text-muted">快去挑戰聽力或拼字測驗吧！</p>
-                <a th:href="@{/quiz/listen}" class="btn btn-info fw-bold me-2">
-                    <i class="ti ti-headphones me-1"></i>聽力測驗
-                </a>
-                <a th:href="@{/quiz/spell}" class="btn btn-warning fw-bold">
-                    <i class="ti ti-pencil me-1"></i>拼字測驗
-                </a>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/profile.js}"></script>
+</th:block>
+
 </body>
 </html>

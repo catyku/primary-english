@@ -4,6 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>單字學習</title>
+    <link rel="stylesheet" th:href="@{/css/vocabulary.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -77,7 +78,7 @@
                     </div>
                     <!-- Vocab Image -->
                     <div class="vocab-image-wrapper mb-3 text-center" th:if="${vocab.image != null}">
-                        <img th:src="@{${vocab.image}}" class="rounded-3 shadow-sm" style="max-height: 120px; width: auto;"
+                        <img th:src="@{${vocab.image}}" class="rounded-3 shadow-sm"
                              th:alt="${vocab.english}"
                              onerror="this.parentElement.style.display='none';">
                     </div>
@@ -118,20 +119,7 @@
 
 </div>
 
-<script layout:fragment="scripts">
-    // 單字頁面自動朗讀按鈕綁定
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.speech-btn').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                var text = this.getAttribute('data-text');
-                if (text) {
-                    speak(text, 'en-US');
-                }
-            });
-        });
-    });
-</script>
+<script layout:fragment="scripts" th:src="@{/js/vocabulary.js}"></script>
 
 </body>
 </html>

@@ -1,0 +1,47 @@
+.prompt-textarea {
+    min-height: 120px;
+    font-size: 1.1rem;
+}
+
+.generate-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    transition: all .3s ease;
+}
+
+.generate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,.4);
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+    color: white;
+    font-weight: bold;
+    padding: .5rem 1rem;
+    border-radius: 20px;
+    font-size: .9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.example-prompt {
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.example-prompt:hover {
+    background: #e0e7ff;
+    transform: translateX(4px);
+}
+
+.spinner-border-sm {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: .15em;
+}

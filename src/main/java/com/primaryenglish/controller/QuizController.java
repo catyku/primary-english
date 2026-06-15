@@ -1,10 +1,8 @@
 package com.primaryenglish.controller;
 
 import com.primaryenglish.entity.Vocabulary;
-import com.primaryenglish.repository.CategoryRepository;
 import com.primaryenglish.repository.VocabularyRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,15 +14,11 @@ import java.util.*;
 public class QuizController {
 
     private final VocabularyRepository vocabularyRepository;
-    private final CategoryRepository categoryRepository;
-    private final ObjectMapper objectMapper;
 
-    public QuizController(VocabularyRepository vocabularyRepository,
-                          CategoryRepository categoryRepository,
-                          ObjectMapper objectMapper) {
+
+    public QuizController(VocabularyRepository vocabularyRepository) {
         this.vocabularyRepository = vocabularyRepository;
-        this.categoryRepository = categoryRepository;
-        this.objectMapper = objectMapper;
+
     }
 
     @GetMapping("/quiz/listen")

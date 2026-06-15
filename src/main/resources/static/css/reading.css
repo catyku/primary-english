@@ -1,0 +1,29 @@
+.reading-card {
+    transition: all .3s ease;
+    border: none;
+}
+
+.reading-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .08) !important;
+}
+
+.level-badge-easy {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.level-badge-medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.level-badge-hard {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.grade-badge {
+    background: #eef2ff;
+    color: #6366f1;
+}

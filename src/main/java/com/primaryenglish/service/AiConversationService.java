@@ -1,8 +1,9 @@
 package com.primaryenglish.service;
 
 import com.primaryenglish.entity.User;
-import com.primaryenglish.repository.VocabularyRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,17 +14,14 @@ import java.util.*;
 @Service
 public class AiConversationService {
 
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final VocabularyRepository vocabRepository;
-
-    public AiConversationService(VocabularyRepository vocabRepository) {
-        this.vocabRepository = vocabRepository;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(AiConversationService.class);
 
     /**
      * 開始新對話：AI 選定主題，提出第一個問題
      */
     public Mono<Map<String, Object>> startConversation(User user, int grade, String difficulty, List<String> learnedWords) {
+        logger.info("Starting conversation for user: {}, grade: {}, difficulty: {}", user.getUsername(), grade, difficulty);
+        
         String topicPool = buildTopicPool(learnedWords);
         String systemPrompt = buildSystemPrompt(grade, difficulty);
         String userPrompt = "請先選擇一個有趣的主題（從我學過的單字相關主題中挑選），然後用英文跟我打招呼並提出第一個簡單的問題。\n\n" +
@@ -38,6 +36,8 @@ public class AiConversationService {
             "3. 用繁體中文寫 TOPIC 和 CHINESE";
 
         return callAi(user, systemPrompt, userPrompt)
+            .doOnNext(response -> logger.debug("AI start conversation response: {}", response))
+            .doOnError(error -> logger.error("AI start conversation failed: {}", error.getMessage(), error))
             .map(this::parseStartResponse);
     }
 
@@ -89,9 +89,11 @@ public class AiConversationService {
     }
 
     private Mono<String> callAiRaw(User user, List<Map<String, Object>> messages) {
-        String provider = user.getApiProvider().trim().toLowerCase();
-        String apiKey = user.getApiKey().trim();
+        String provider = user.getApiProvider() != null ? user.getApiProvider().trim().toLowerCase() : "";
+        String apiKey = user.getApiKey() != null ? user.getApiKey().trim() : "";
         String model = user.getApiModel();
+        
+        logger.info("Calling AI provider: {}, model: {}", provider, model);
 
         return switch (provider) {
             case "openrouter" -> callOpenRouter(apiKey, model, messages);
@@ -105,6 +107,8 @@ public class AiConversationService {
 
     private Mono<String> callOpenRouter(String key, String model, List<Map<String, Object>> messages) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "moonshotai/kimi-k2-6-free";
+        logger.debug("Calling OpenRouter with model: {}", chosenModel);
+        
         WebClient client = WebClient.builder()
             .baseUrl("https://openrouter.ai/api/v1")
             .defaultHeader("Authorization", "Bearer " + key)
@@ -124,12 +128,15 @@ public class AiConversationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("OpenRouter response: {}", response))
+            .doOnError(error -> logger.error("OpenRouter API error: {}", error.getMessage(), error))
             .map(this::extractContent);
     }
 
     private Mono<String> callGemini(String key, String model, List<Map<String, Object>> messages) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gemini-2.0-flash-lite-001";
+        logger.debug("Calling Gemini with model: {}", chosenModel);
 
         // Gemini 不支援 system role，合併到第一條 user
         StringBuilder combined = new StringBuilder();
@@ -162,20 +169,16 @@ public class AiConversationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(content)
             .retrieve()
-            .bodyToMono(Map.class)
-            .map(r -> {
-                try {
-                    List<Map> candidates = (List<Map>) r.get("candidates");
-                    Map textPart = (Map) ((List) ((Map) candidates.get(0).get("content")).get("parts")).get(0);
-                    return (String) textPart.get("text");
-                } catch (Exception e) {
-                    throw new RuntimeException("Gemini 回傳格式錯誤: " + e.getMessage());
-                }
-            });
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("Gemini response: {}", response))
+            .doOnError(error -> logger.error("Gemini API error: {}", error.getMessage(), error))
+            .map(this::extractGeminiContent);
     }
 
     private Mono<String> callOpenAI(String key, String model, List<Map<String, Object>> messages) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gpt-4o-mini";
+        logger.debug("Calling OpenAI with model: {}", chosenModel);
+        
         WebClient client = WebClient.builder()
             .baseUrl("https://api.openai.com/v1")
             .defaultHeader("Authorization", "Bearer " + key)
@@ -193,12 +196,16 @@ public class AiConversationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("OpenAI response: {}", response))
+            .doOnError(error -> logger.error("OpenAI API error: {}", error.getMessage(), error))
             .map(this::extractContent);
     }
 
     private Mono<String> callGitHubCopilot(String key, String model, List<Map<String, Object>> messages) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gpt-4o";
+        logger.debug("Calling GitHub Copilot with model: {}", chosenModel);
+        
         WebClient client = WebClient.builder()
             .baseUrl("https://api.githubcopilot.com")
             .defaultHeader("Authorization", "Bearer " + key)
@@ -217,13 +224,17 @@ public class AiConversationService {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("GitHub Copilot response: {}", response))
+            .doOnError(error -> logger.error("GitHub Copilot API error: {}", error.getMessage(), error))
             .map(this::extractContent);
     }
 
+    @SuppressWarnings("unchecked")
     private Mono<String> callOllama(String key, String model, List<Map<String, Object>> messages) {
         String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e2b";
         String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
+        logger.debug("Calling Ollama at {} with model: {}", baseUrl, chosenModel);
 
         WebClient client = WebClient.builder()
             .baseUrl(baseUrl + "/api")
@@ -235,13 +246,15 @@ public class AiConversationService {
             "stream", false,
             "options", Map.of("temperature", 0.85)
         );
-
+       
         return client.post()
             .uri("/chat")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .bodyToMono(Map.class)
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .doOnNext(response -> logger.debug("Ollama response: {}", response))
+            .doOnError(error -> logger.error("Ollama API error: {}", error.getMessage(), error))
             .map(r -> {
                 Object msg = r.get("message");
                 if (msg instanceof Map) {
@@ -256,12 +269,32 @@ public class AiConversationService {
 
     @SuppressWarnings("unchecked")
     private String extractContent(Map<String, Object> response) {
-        List<Map> choices = (List<Map>) response.get("choices");
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
         if (choices != null && !choices.isEmpty()) {
             Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
             if (message != null) return (String) message.get("content");
         }
         return String.valueOf(response.get("content") != null ? response.get("content") : response);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String extractGeminiContent(Map<String, Object> response) {
+        try {
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+            if (candidates != null && !candidates.isEmpty()) {
+                Map<String, Object> candidate = candidates.get(0);
+                Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+                if (content != null) {
+                    List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                    if (parts != null && !parts.isEmpty()) {
+                        return (String) parts.get(0).get("text");
+                    }
+                }
+            }
+            throw new RuntimeException("Invalid Gemini response format: 'text' field not found.");
+        } catch (ClassCastException | NullPointerException e) {
+            throw new RuntimeException("Gemini response parsing error: " + e.getMessage(), e);
+        }
     }
 
     // ========== 提示詞 ==========
@@ -351,13 +384,14 @@ public class AiConversationService {
     }
 
     private String extractBlock(String content, String tag) {
+        // 嘗試匹配標準格式：TAG: 內容（下一個標籤前結束，支援單行或換行）
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(
-            tag + "\\s*[:：]\\s*(.*?)(?=\\n\\n[A-Z_]+[:：]|$)", java.util.regex.Pattern.DOTALL);
+            tag + "\\s*[:：]\\s*(.*?)(?=\\s+[A-Z_]+[:：]|\\n+[A-Z_]+[:：]|$)", java.util.regex.Pattern.DOTALL);
         java.util.regex.Matcher m = p.matcher(content);
         if (m.find()) return m.group(1).trim();
-        // 嘗試無冒號
+        // 嘗試無冒號格式
         p = java.util.regex.Pattern.compile(
-            tag + "\\s*\\n(.*?)(?=\\n[A-Z_]+[:：]|$)", java.util.regex.Pattern.DOTALL);
+            tag + "\\s*\\n(.*?)(?=\\s+[A-Z_]+[:：]|\\n+[A-Z_]+[:：]|$)", java.util.regex.Pattern.DOTALL);
         m = p.matcher(content);
         if (m.find()) return m.group(1).trim();
         return "";

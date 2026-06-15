@@ -4,6 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>閱讀測驗結果</title>
+    <link rel="stylesheet" th:href="@{/css/reading.css}">
     <style>
         .result-correct { border-left: 4px solid #22c55e !important; }
         .result-wrong { border-left: 4px solid #ef4444 !important; }
@@ -59,7 +60,6 @@
                     </div>
                     <div class="d-flex gap-3 text-muted small"
                          th:if="${r.isCorrect}"
-003e
                         <span>答案：<span class="fw-bold text-success" th:text="${r.correctAnswer}"></span></span>
                     </div>
                 </div>

@@ -3,9 +3,7 @@ package com.primaryenglish.controller;
 import com.primaryenglish.entity.Article;
 import com.primaryenglish.entity.ReadingQuestion;
 import com.primaryenglish.repository.ArticleRepository;
-import com.primaryenglish.repository.ReadingQuestionRepository;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +14,13 @@ import java.util.*;
 @RequestMapping("/reading")
 public class ReadingController {
 
-    @Autowired
-    private ArticleRepository articleRepo;
+    private final ArticleRepository articleRepo;
+   
 
-    @Autowired
-    private ReadingQuestionRepository questionRepo;
+    public ReadingController(ArticleRepository articleRepo) {
+        this.articleRepo = articleRepo;
+       
+    }
 
     // 文章列表
     @GetMapping("")

@@ -1,0 +1,24 @@
+/* Profile Page Specific Styles */
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+}
+
+.trophy-decoration {
+    font-size: 5rem;
+}
+
+.stat-icon-wrapper {
+    width: 64px;
+    height: 64px;
+}
+
+.stat-icon-wrapper span {
+    font-size: 2rem;
+}
+
+.ai-header-icon-wrapper {
+    width: 48px;
+    height: 48px;
+}

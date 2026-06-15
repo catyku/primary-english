@@ -2,7 +2,6 @@ package com.primaryenglish.controller;
 
 import com.primaryenglish.entity.User;
 import com.primaryenglish.entity.UserVocabProgress;
-import com.primaryenglish.entity.Vocabulary;
 import com.primaryenglish.service.AiConversationService;
 import com.primaryenglish.service.ProgressService;
 import com.primaryenglish.service.UserService;
@@ -71,7 +70,19 @@ public class AiConversationController {
         }
 
         // 年級與難度
-        int grade = body.containsKey("grade") ? ((Number) body.get("grade")).intValue() : 3;
+        int grade = 3;
+        if (body.containsKey("grade")) {
+            Object gradeObj = body.get("grade");
+            if (gradeObj instanceof Number) {
+                grade = ((Number) gradeObj).intValue();
+            } else if (gradeObj instanceof String) {
+                try {
+                    grade = Integer.parseInt((String) gradeObj);
+                } catch (NumberFormatException e) {
+                    grade = 3;
+                }
+            }
+        }
         String difficulty = body.containsKey("difficulty") ? (String) body.get("difficulty") : "medium";
 
         // 取得使用者已學單字（若無則隨機取部分單字）

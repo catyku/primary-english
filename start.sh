@@ -13,7 +13,7 @@ JAVA_OPTS="$JAVA_OPTS --enable-native-access=ALL-UNNAMED"
 JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8"
 
 # 設定 Spring Boot 參數（可選）
-# SPRING_OPTS="--server.port=8077"
+SPRING_OPTS="--server.port=8077"
 
 cd "$APP_HOME" || exit 1
 
@@ -21,7 +21,7 @@ echo "啟動 $APP_NAME ..."
 echo "JAR: $JAR_FILE"
 echo "Log: $LOG_FILE"
 
-nohup java $JAVA_OPTS -jar "$JAR_FILE" $SPRING_OPTS > "$LOG_FILE" 2>&1 &
+nohup java $JAVA_OPTS -jar "target/$JAR_FILE" $SPRING_OPTS > "$LOG_FILE" 2>&1 &
 PID=$!
 echo $PID > "$PID_FILE"
 

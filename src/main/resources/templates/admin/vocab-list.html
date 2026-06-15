@@ -4,13 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>單字管理</title>
-    <style>
-        .admin-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
-        .admin-table th { background: #f8fafc; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
-        .admin-table td { vertical-align: middle; }
-        .btn-xs { padding: .2rem .5rem; font-size: .8rem; }
-        .search-box { max-width: 300px; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin-list.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -107,7 +101,7 @@
                                 </a>
                                 <form th:action="@{/admin/vocabularies/{id}/delete(id=${v.id})}" method="post"
                                       class="d-inline"
-                                      onsubmit="return confirm('確定要刪除這個單字嗎？');">
+                                      onsubmit="return confirmDelete();">
                                     <button type="submit" class="btn btn-outline-danger btn-xs">
                                         <i class="ti ti-trash"></i> 刪除
                                     </button>
@@ -127,5 +121,8 @@
     </div>
 
 </div>
+
+<script layout:fragment="scripts" th:src="@{/js/vocab-list.js}"></script>
+
 </body>
 </html>

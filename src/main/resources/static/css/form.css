@@ -1,0 +1,30 @@
+.form-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+
+.form-card-wrapper {
+    min-height: 70vh;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #ec4899 0%, #f59e0b 50%, #f97316 100%);
+}
+
+.form-header-decoration-1 {
+    font-size: 4rem;
+}
+
+.form-header-decoration-2 {
+    font-size: 3rem;
+}
+
+.form-icon-wrapper {
+    width: 80px;
+    height: 80px;
+}
+
+.ai-settings-toggle {
+    cursor: pointer;
+}

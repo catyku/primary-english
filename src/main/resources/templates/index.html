@@ -4,6 +4,7 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>首頁</title>
+    <link rel="stylesheet" th:href="@{/css/index.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -15,15 +16,15 @@
 
     <!-- Hero Section -->
     <div class="p-5 mb-5 hero-kids rounded-5 shadow-lg position-relative overflow-hidden">
-        <div class="position-absolute top-0 end-0 p-3 opacity-25" style="font-size: 8rem;">📚</div>
-        <div class="position-absolute bottom-0 start-0 p-3 opacity-25" style="font-size: 6rem;">✨</div>
+        <div class="position-absolute top-0 end-0 p-3 opacity-25 hero-decoration-1">📚</div>
+        <div class="position-absolute bottom-0 start-0 p-3 opacity-25 hero-decoration-2">✨</div>
         <div class="container-fluid py-4 position-relative">
-            <h1 class="display-4 fw-bold text-white mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
-                <span class="d-inline-block" style="animation: bounceIn 1s ease;">🌈</span> 歡迎來到英文單字樂園！
+            <h1 class="display-4 fw-bold text-white mb-3">
+                <span class="d-inline-block">🌈</span> 歡迎來到英文單字樂園！
             </h1>
             <p class="col-md-8 fs-5 text-white-80">
                 這裡有豐富的國小英文單字，搭配例句與語音，讓你輕鬆學英文！
-                選擇一個主題開始學習吧 <span style="animation: wobble 2s ease-in-out infinite;">🎒</span>
+                選擇一個主題開始學習吧 <span>🎒</span>
             </p>
             <a th:href="@{/vocabulary}" class="btn btn-warning btn-lg fw-bold shadow-sm mt-3 px-4 py-2">
                 <span class="nav-icon-wrap me-1"><i class="ti ti-player-play-filled"></i></span> 開始學習
@@ -43,13 +44,11 @@
             <a th:href="@{/vocabulary(category=${cat.id})}" class="text-decoration-none">
                 <div class="card category-card h-100 border-0 shadow-sm overflow-hidden">
                     <!-- Category Image -->
-                    <div class="category-img-wrapper position-relative" style="height: 120px; overflow: hidden;"
-                         th:if="${cat.image != null}">
-                        <img th:src="@{${cat.image}}" class="w-100 h-100 object-fit-cover"
-                             th:alt="${cat.name}" style="object-fit: cover;"
+                    <div class="category-img-wrapper position-relative" th:if="${cat.image != null}">
+                        <img th:src="@{${cat.image}}" class="w-100 h-100"
+                             th:alt="${cat.name}"
                              onerror="this.parentElement.style.display='none';">
-                        <div class="position-absolute bottom-0 start-0 w-100 p-2"
-                             style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2 badge-overlay">
                             <span class="badge bg-white text-dark fw-bold">
                                 <i th:class="'ti ' + ${cat.icon} + ' me-1'"></i>
                                 <span th:text="${cat.name}">動物</span>

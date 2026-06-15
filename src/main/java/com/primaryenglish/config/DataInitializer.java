@@ -2,27 +2,33 @@ package com.primaryenglish.config;
 
 import com.primaryenglish.entity.*;
 import com.primaryenglish.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired private CategoryRepository categoryRepo;
-    @Autowired private VocabularyRepository vocabRepo;
-    @Autowired private ArticleRepository articleRepo;
+    private final CategoryRepository categoryRepo;
+   
+    private final ArticleRepository articleRepo;
+    private final DataSource dataSource;
 
-    @Autowired
-    private DataSource dataSource;
+    public DataInitializer(CategoryRepository categoryRepo, ArticleRepository articleRepo, DataSource dataSource) {
+        this.categoryRepo = categoryRepo;
+       
+        this.articleRepo = articleRepo;
+        this.dataSource = dataSource;
+    }
 
     @Override
     public void run(String... args) throws Exception {
+        // 初始化 Spring Session JDBC 表格（若不存在）
+        initSessionSchema();
+
         // 若資料庫為空，自動執行 data.sql 初始化分類與單字資料
         if (categoryRepo.count() == 0) {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
@@ -30,6 +36,18 @@ public class DataInitializer implements CommandLineRunner {
             populator.execute(dataSource);
         }
         initArticles();
+    }
+
+    private void initSessionSchema() throws Exception {
+        try (java.sql.Connection conn = dataSource.getConnection();
+             java.sql.ResultSet rs = conn.getMetaData().getTables(null, null, "SPRING_SESSION", null)) {
+            if (!rs.next()) {
+                // 表格不存在，執行 schema-sqlite.sql
+                ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+                populator.addScript(new ClassPathResource("schema-sqlite.sql"));
+                populator.execute(dataSource);
+            }
+        }
     }
 
     private void initArticles() {

@@ -1,0 +1,263 @@
+/* ===== General ===== */
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-record {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* ===== Chat Container ===== */
+.chat-container {
+    max-height: 55vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fafafa 0%, #f5f3ff 100%);
+    border-radius: 1rem;
+}
+.chat-container::-webkit-scrollbar { width: 6px; }
+.chat-container::-webkit-scrollbar-track { background: transparent; }
+.chat-container::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 3px; }
+
+/* ===== Chat Bubbles ===== */
+.chat-bubble {
+    max-width: 80%;
+    padding: 1rem 1.25rem;
+    border-radius: 1.25rem;
+    margin-bottom: 1rem;
+    animation: slideUp 0.4s ease forwards;
+    position: relative;
+    word-break: break-word;
+}
+.chat-bubble.ai {
+    background: linear-gradient(135deg, #fff 0%, #eef2ff 100%);
+    border: 2px solid #c7d2fe;
+    margin-right: auto;
+    border-bottom-left-radius: 0.25rem;
+}
+.chat-bubble.user {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem;
+}
+.chat-bubble .bubble-meta {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.chat-bubble.ai .bubble-meta { color: #6366f1; }
+.chat-bubble.user .bubble-meta { color: rgba(255,255,255,0.85); }
+
+.chat-bubble .bubble-text {
+    font-size: 1.15rem;
+    line-height: 1.6;
+}
+.chat-bubble.ai .bubble-text { color: #1e1b4b; }
+
+.chat-bubble .bubble-translation {
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #c4b5fd;
+    color: #6b7280;
+}
+.chat-bubble .bubble-hint {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(245, 158, 11, 0.12);
+    border-radius: 0.5rem;
+    color: #92400e;
+}
+.chat-bubble.user .bubble-translation,
+.chat-bubble.user .bubble-hint { display: none; }
+
+/* Speak Button */
+.speak-bubble-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(99,102,241,0.1);
+    color: #6366f1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+}
+.speak-bubble-btn:hover {
+    background: #6366f1;
+    color: white;
+    transform: scale(1.1);
+}
+.chat-bubble.user .speak-bubble-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+.chat-bubble.user .speak-bubble-btn:hover {
+    background: white;
+    color: #6366f1;
+}
+
+/* ===== Input Area ===== */
+.chat-input-area {
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.chat-input {
+    flex: 1;
+    border: 2px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+.chat-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+
+/* Mic Button */
+.mic-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.mic-btn:hover { transform: scale(1.1); box-shadow: 0 4px 16px rgba(236,72,153,0.4); }
+.mic-btn.recording {
+    animation: pulse-record 1.2s ease-in-out infinite;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Send Button */
+.send-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.send-btn:hover { transform: scale(1.1); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ===== Setup Panel ===== */
+.setup-card {
+    background: linear-gradient(135deg, #fff 0%, #fdf4ff 100%);
+    border: 2px solid #e9d5ff;
+    border-radius: 1.25rem;
+}
+.setup-card .form-select, .setup-card .form-control {
+    border-radius: 0.75rem;
+    border: 2px solid #e5e7eb;
+}
+.setup-card .form-select:focus, .setup-card .form-control:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+}
+
+/* Start Button */
+.start-convo-btn {
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #f59e0b 100%);
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.start-convo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(236,72,153,0.4);
+}
+.start-convo-btn:disabled {
+    opacity: 0.6;
+    transform: none !important;
+    cursor: not-allowed;
+}
+
+/* ===== Status Indicators ===== */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+.status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+.status-dot.loading {
+    background: #f59e0b;
+    animation: blink 1s infinite;
+}
+.status-dot.speaking {
+    background: #6366f1;
+    animation: blink 0.5s infinite;
+}
+
+/* ===== Misc ===== */
+.tip-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid #f59e0b;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: #92400e;
+}
+
+.empty-chat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: #9ca3af;
+}
+.empty-chat-icon {
+    font-size: 4rem;
+    color: #e5e7eb;
+    margin-bottom: 1rem;
+}
