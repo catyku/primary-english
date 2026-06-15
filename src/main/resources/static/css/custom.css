@@ -1,0 +1,430 @@
+/* ===== 全局樣式 ===== */
+body {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 50%, #fde68a 100%);
+    font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ===== 漂浮裝飾動畫 ===== */
+.float-decoration {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+    animation: floatAround 8s ease-in-out infinite;
+}
+
+@keyframes floatAround {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(10px, -20px) rotate(5deg); }
+    50% { transform: translate(-5px, -10px) rotate(-3deg); }
+    75% { transform: translate(15px, -25px) rotate(2deg); }
+}
+
+/* ===== 通用動畫 ===== */
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.3); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.3); }
+    70% { transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+    50% { box-shadow: 0 0 20px 10px rgba(236, 72, 153, 0.1); }
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes rainbow-border {
+    0% { border-color: #6366f1; }
+    25% { border-color: #8b5cf6; }
+    50% { border-color: #ec4899; }
+    75% { border-color: #f59e0b; }
+    100% { border-color: #6366f1; }
+}
+
+/* ===== Tabler Icons ===== */
+.nav-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.nav-icon-wrap i.ti {
+    font-size: 1.1em;
+}
+
+/* ===== 漸層背景 ===== */
+.hero-kids {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 30%, #ec4899 70%, #f59e0b 100%);
+    position: relative;
+}
+
+.hero-kids::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border-radius: 1.5rem;
+}
+
+.text-white-80 { color: rgba(255,255,255,0.85) !important; }
+.text-white-75 { color: rgba(255,255,255,0.75) !important; }
+
+/* ===== Section Icon ===== */
+.section-icon {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== 柔色背景 ===== */
+.bg-primary-soft { background-color: rgba(99, 102, 241, 0.12) !important; }
+.bg-success-soft { background-color: rgba(34, 197, 94, 0.12) !important; }
+.bg-info-soft { background-color: rgba(14, 165, 233, 0.12) !important; }
+.bg-warning-soft { background-color: rgba(245, 158, 11, 0.12) !important; }
+
+/* ===== Footer ===== */
+.footer-glow {
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    box-shadow: 0 -4px 20px rgba(99, 102, 241, 0.2);
+}
+
+/* ===== 單字卡片 ===== */
+.vocab-card {
+    border-radius: 1.25rem;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
+    border: 2px solid transparent;
+    animation: slideUp 0.5s ease forwards;
+}
+
+.vocab-card:nth-child(1) { animation-delay: 0.05s; }
+.vocab-card:nth-child(2) { animation-delay: 0.1s; }
+.vocab-card:nth-child(3) { animation-delay: 0.15s; }
+.vocab-card:nth-child(4) { animation-delay: 0.2s; }
+.vocab-card:nth-child(5) { animation-delay: 0.25s; }
+.vocab-card:nth-child(6) { animation-delay: 0.3s; }
+
+.vocab-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15) !important;
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.vocab-english {
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.example-section {
+    background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%);
+    border-radius: 0.875rem;
+    padding: 0.875rem 1rem;
+    border-left: 3px solid #6366f1;
+}
+
+.example-en {
+    font-style: italic;
+    color: #4f46e5;
+}
+
+.example-cn {
+    color: #6b7280;
+}
+
+/* ===== 分類卡片圖片 ===== */
+.category-img-wrapper img {
+    transition: transform 0.35s ease;
+}
+
+.category-card:hover .category-img-wrapper img {
+    transform: scale(1.1);
+}
+
+/* ===== 單字卡片圖片 ===== */
+.vocab-image-wrapper img {
+    max-height: 120px;
+    width: auto;
+    border: 2px solid #e5e7eb;
+    transition: all 0.35s ease;
+}
+
+.vocab-card:hover .vocab-image-wrapper img {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* ===== 分類卡片 ===== */
+.category-card {
+    border-radius: 1.25rem;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(245, 158, 11, 0.15) !important;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.category-icon {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== 測驗卡片 ===== */
+.quiz-card {
+    border-radius: 1.25rem;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.quiz-card:hover::before {
+    opacity: 1;
+    transform: rotate(45deg) translate(30%, 30%);
+}
+
+.quiz-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.quiz-listen-bg {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%) !important;
+}
+
+.quiz-spell-bg {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%) !important;
+}
+
+.quiz-emoji {
+    font-size: 4rem;
+    animation: floatY 3s ease-in-out infinite;
+}
+
+/* ===== 語音按鈕 ===== */
+.speech-btn {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid currentColor;
+}
+
+.speech-btn:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white !important;
+    border-color: #6366f1;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.speech-btn:active {
+    transform: scale(0.92);
+}
+
+.btn-xs {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+}
+
+/* ===== 選項按鈕 ===== */
+.option-btn {
+    border-radius: 1rem !important;
+    padding: 1.25rem !important;
+    font-size: 1.25rem !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid currentColor;
+    background: white;
+}
+
+.option-btn:hover:not(:disabled) {
+    transform: scale(1.03);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white !important;
+    border-color: #6366f1;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+}
+
+.option-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ===== 主題篩選按鈕 ===== */
+.category-pill {
+    border-radius: 2rem !important;
+    padding: 0.5rem 1.25rem !important;
+    margin: 0.25rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.category-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* ===== 進度條動畫 ===== */
+.progress-bar {
+    transition: width 0.5s ease;
+}
+
+/* ===== 按鈕樣式增強 ===== */
+.btn {
+    border-radius: 0.875rem;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #22c55e, #10b981);
+    border: none;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+    border: none;
+    color: white !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border: none;
+}
+
+/* ===== 徽章樣式 ===== */
+.badge {
+    font-weight: 600;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+
+/* ===== 空狀態 ===== */
+.empty-state {
+    animation: slideUp 0.6s ease;
+}
+
+/* ===== 響應式微調 ===== */
+@media (max-width: 576px) {
+    .vocab-english {
+        font-size: 1.75rem !important;
+    }
+
+    .category-icon {
+        font-size: 2rem;
+    }
+
+    .display-1 {
+        font-size: 4rem !important;
+    }
+
+    .hero-kids h1 {
+        font-size: 1.75rem;
+    }
+
+    .float-decoration {
+        display: none;
+    }
+}
+
+/* ===== 卡片通用增強 ===== */
+.card {
+    border-radius: 1.25rem;
+}
+
+/* ===== 輸入框樣式 ===== */
+.form-control {
+    border-radius: 0.875rem;
+    border: 2px solid #e5e7eb;
+    transition: all 0.25s ease;
+}
+
+.form-control:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* ===== Quiz 播放按鈕 ===== */
+#play-btn, #spell-play-btn {
+    animation: pulse-glow 2s ease-in-out infinite;
+}

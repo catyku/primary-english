@@ -34,7 +34,7 @@ build/
 
 logs/
 uploads/
-src/main/resources/static
+
 sessions/
 .env
 .env.local
