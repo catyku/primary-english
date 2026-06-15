@@ -4,12 +4,14 @@ import com.primaryenglish.entity.*;
 import com.primaryenglish.repository.*;
 import com.primaryenglish.service.AiGenerationService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping("/admin")
@@ -20,6 +22,7 @@ public class AdminController {
     private final ArticleRepository articleRepo;
     private final ReadingQuestionRepository questionRepo;
     private final AiGenerationService aiService;
+    private final ConcurrentHashMap<String, GenerationJob> generationJobs = new ConcurrentHashMap<>();
 
     public AdminController(VocabularyRepository vocabRepo, CategoryRepository categoryRepo, ArticleRepository articleRepo, ReadingQuestionRepository questionRepo, AiGenerationService aiService) {
         this.vocabRepo = vocabRepo;
@@ -287,6 +290,86 @@ public class AdminController {
             ra.addFlashAttribute("error", "AI 生成發生錯誤：" + e.getMessage());
             return "redirect:/admin/articles/generate";
         }
+    }
+
+    // ========== 背景非同步生成 ==========
+
+    public static class GenerationJob {
+        public String status = "pending";
+        public String message;
+        public Long articleId;
+        public String error;
+        public long createdAt = System.currentTimeMillis();
+    }
+
+    @PostMapping("/articles/generate-async")
+    @ResponseBody
+    public ResponseEntity<?> doGenerateAsync(@RequestParam String prompt,
+                                             @RequestParam(defaultValue = "3") int grade,
+                                             @RequestParam(defaultValue = "easy") String difficulty,
+                                             HttpSession session) {
+        User user = (User) session.getAttribute("USER");
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "請先登入"));
+        }
+        if (!Boolean.TRUE.equals(user.getApiEnabled())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "請先在「個人資料」中啟用 AI 並設定 API Key"));
+        }
+        if (user.getApiKey() == null || user.getApiKey().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "API Key 未設定"));
+        }
+        if (prompt == null || prompt.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "請輸入提示詞"));
+        }
+
+        String jobId = UUID.randomUUID().toString();
+        GenerationJob job = new GenerationJob();
+        generationJobs.put(jobId, job);
+
+        aiService.generateArticle(user, prompt.trim(), grade, difficulty)
+            .subscribe(article -> {
+                if (article == null || article.getContent() == null || article.getContent().isBlank()) {
+                    job.status = "failed";
+                    job.error = "AI 生成失敗，請重試或更換提示詞";
+                    return;
+                }
+                article.setGrade(String.valueOf(grade));
+                if (article.getWordCount() == null || article.getWordCount() == 0) {
+                    String[] words = article.getContent().trim().split("\\s+");
+                    article.setWordCount(words.length);
+                }
+                article.setTimeLimit(5);
+                Article saved = articleRepo.save(article);
+                List<ReadingQuestion> questions = new ArrayList<>(article.getQuestions());
+                for (ReadingQuestion q : questions) {
+                    q.setArticle(saved);
+                    questionRepo.save(q);
+                }
+                job.status = "completed";
+                job.articleId = saved.getId();
+                job.message = "AI 已成功生成文章「" + saved.getTitle() + "」！共 " + questions.size() + " 題";
+            }, error -> {
+                job.status = "failed";
+                job.error = "AI 生成發生錯誤：" + error.getMessage();
+            });
+
+        return ResponseEntity.ok(Map.of("jobId", jobId, "status", "pending"));
+    }
+
+    @GetMapping("/articles/generate/status/{jobId}")
+    @ResponseBody
+    public ResponseEntity<?> getGenerationStatus(@PathVariable String jobId) {
+        GenerationJob job = generationJobs.get(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("jobId", jobId);
+        result.put("status", job.status);
+        result.put("message", job.message);
+        result.put("articleId", job.articleId);
+        result.put("error", job.error);
+        return ResponseEntity.ok(result);
     }
 
     private void saveQuestions(Article article, Map<String, String> params) {

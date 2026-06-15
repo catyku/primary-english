@@ -178,6 +178,37 @@
         </div>
     </div>
 
+    <!-- Generation Status Modal -->
+    <div class="modal fade" id="generationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-sparkles me-2 text-primary"></i>AI 文章生成
+                    </h5>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div id="generationPending">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p class="mb-0 fw-bold">AI 正在背景生成文章，請稍候...</p>
+                        <small class="text-muted">這可能需要 30 秒到 2 分鐘</small>
+                    </div>
+                    <div id="generationSuccess" class="d-none">
+                        <i class="ti ti-check-circle text-success display-4 mb-3"></i>
+                        <p class="mb-2 fw-bold" id="generationSuccessMessage"></p>
+                        <a id="generationEditLink" href="#" class="btn btn-success">
+                            <i class="ti ti-edit me-1"></i>前往編輯
+                        </a>
+                    </div>
+                    <div id="generationFailed" class="d-none">
+                        <i class="ti ti-alert-circle text-danger display-4 mb-3"></i>
+                        <p class="mb-2 text-danger" id="generationFailedMessage"></p>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script layout:fragment="scripts" th:src="@{/js/article-generate.js}"></script>

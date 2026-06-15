@@ -113,14 +113,16 @@
 
 </div>
 
-<script layout:fragment="scripts" th:src="@{/js/article-form.js}"></script>
-<script layout:fragment="scripts" th:inline="javascript">
-    /*<![CDATA[*/
-    document.addEventListener('DOMContentLoaded', function() {
-        var existingQuestions = /*[[${article.questions}]]*/ [];
-        initializeForm(existingQuestions);
-    });
-    /*]]>*/
-</script>
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/article-form.js}"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            var existingQuestions = /*[[${article.questions}]]*/ [];
+            initializeForm(existingQuestions);
+        });
+        /*]]>*/
+    </script>
+</th:block>
 </body>
 </html>
