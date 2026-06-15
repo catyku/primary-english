@@ -38,3 +38,6 @@ src/main/resources/static
 sessions/
 .env
 .env.local
+app.log
+out.log
+FETCH_HEAD
