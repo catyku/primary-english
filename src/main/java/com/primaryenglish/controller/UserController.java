@@ -4,6 +4,7 @@ import com.primaryenglish.entity.User;
 import com.primaryenglish.service.UserService;
 import com.primaryenglish.service.ProgressService;
 import com.primaryenglish.service.QuizResultService;
+import com.primaryenglish.config.AiUserModelSelectionConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,12 +27,15 @@ public class UserController {
     private final UserService userService;
     private final ProgressService progressService;
     private final QuizResultService quizResultService;
+    private final AiUserModelSelectionConfig aiUserModelSelectionConfig;
 
     public UserController(UserService userService, ProgressService progressService,
-                          QuizResultService quizResultService) {
+                          QuizResultService quizResultService,
+                          AiUserModelSelectionConfig aiUserModelSelectionConfig) {
         this.userService = userService;
         this.progressService = progressService;
         this.quizResultService = quizResultService;
+        this.aiUserModelSelectionConfig = aiUserModelSelectionConfig;
     }
 
     private boolean isLoggedIn(HttpSession session) {
@@ -204,6 +208,9 @@ public class UserController {
         model.addAttribute("avgScore", avgScore != null ? Math.round(avgScore) : 0);
         model.addAttribute("quizStats", quizStats != null ? quizStats : new ArrayList<>());
         model.addAttribute("quizResults", quizResultService.getUserResults(user.getId()));
+        
+        // AI 模型選擇控制：是否允許使用者自選 AI 模型
+        model.addAttribute("aiModelSelectionEnabled", aiUserModelSelectionConfig.isEnabled());
 
         return "profile";
     }

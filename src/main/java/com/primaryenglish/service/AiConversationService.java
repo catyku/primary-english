@@ -15,6 +15,11 @@ import java.util.*;
 public class AiConversationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AiConversationService.class);
+    private final AiConfigResolver aiConfigResolver;
+
+    public AiConversationService(AiConfigResolver aiConfigResolver) {
+        this.aiConfigResolver = aiConfigResolver;
+    }
 
     /**
      * 開始新對話：AI 選定主題，提出第一個問題
@@ -24,8 +29,12 @@ public class AiConversationService {
         
         String topicPool = buildTopicPool(learnedWords);
         String systemPrompt = buildSystemPrompt(grade, difficulty);
+        
+        // 根據年級給予不同的主題傾向引導
+        String gradeTopicGuide = buildGradeTopicGuide(grade);
+        
         String userPrompt = "請先選擇一個有趣的主題（從我學過的單字相關主題中挑選），然後用英文跟我打招呼並提出第一個簡單的問題。\n\n" +
-            "我學過的單字主題範圍：" + (topicPool.isEmpty() ? "國小基礎英文（數字、顏色、動物、食物、家庭...）" : topicPool) +
+            "我學過的單字主題範圍：" + (topicPool.isEmpty() ? gradeTopicGuide : topicPool) +
             "\n\n輸出格式：\n" +
             "TOPIC: [繁體中文主題名稱]\n" +
             "ENGLISH: [英文問候+問題，2-3句，使用國小程度單字]\n" +
@@ -89,6 +98,9 @@ public class AiConversationService {
     }
 
     private Mono<String> callAiRaw(User user, List<Map<String, Object>> messages) {
+        // 解析 AI 配置：如果系統強制預設，或使用者未設定，自動填入
+        aiConfigResolver.resolve(user);
+        
         String provider = user.getApiProvider() != null ? user.getApiProvider().trim().toLowerCase() : "";
         String apiKey = user.getApiKey() != null ? user.getApiKey().trim() : "";
         String model = user.getApiModel();
@@ -317,6 +329,19 @@ public class AiConversationService {
             "6. 語氣要像在和小朋友聊天，親切自然\n" +
             "7. 如果學生回答得很好，給予具體的稱讚\n" +
             "8. 回應後要繼續問下一個相關問題，保持對話流暢";
+    }
+
+    /**
+     * 根據年級提供不同的主題建議，避免 AI 總是選擇「動物」
+     */
+    private String buildGradeTopicGuide(int grade) {
+        return switch (grade) {
+            case 3 -> "國小三四年級基礎主題（請優先選擇）：數字、顏色、動物、水果、家庭成員、基本動作（跑跳走）、情緒表情";
+            case 4 -> "國小四年級主題（請優先選擇）：學校生活、食物飲料、交通工具、日常活動、天氣季節、身體部位、衣服配件";
+            case 5 -> "國小五年級主題（請優先選擇）：運動比賽、旅遊景點、節日活動、購物場所、職業工作、自然環境、健康衛生";
+            case 6 -> "國小六年級主題（請優先選擇）：未來夢想、科技產品、環保議題、社會公德、文化差異、故事創作、團隊合作";
+            default -> "國小基礎英文（數字、顏色、動物、食物、家庭、學校、天氣、運動...）";
+        };
     }
 
     /**

@@ -79,6 +79,12 @@
             <version>6.6.2.Final</version>
         </dependency>
 
+        <!-- Flyway 数据库迁移 (SQLite 社区支持) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- Spring Boot DevTools -->
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
