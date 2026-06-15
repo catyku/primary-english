@@ -46,8 +46,10 @@ public class AiConversationController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
+        boolean isOllama = "ollama".equalsIgnoreCase(user.getApiProvider() != null ? user.getApiProvider() : "");
         model.addAttribute("apiEnabled", Boolean.TRUE.equals(user.getApiEnabled())
-                && user.getApiProvider() != null && user.getApiKey() != null);
+                && user.getApiProvider() != null
+                && (isOllama || user.getApiKey() != null));
         model.addAttribute("providers", com.primaryenglish.service.AiGenerationService.getProviders());
         return "ai-conversation";
     }
@@ -63,7 +65,8 @@ public class AiConversationController {
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "請先登入"));
         }
-        if (!Boolean.TRUE.equals(user.getApiEnabled()) || user.getApiKey() == null) {
+        boolean isOllama = "ollama".equalsIgnoreCase(user.getApiProvider() != null ? user.getApiProvider() : "");
+        if (!Boolean.TRUE.equals(user.getApiEnabled()) || (!isOllama && user.getApiKey() == null)) {
             return ResponseEntity.badRequest().body(Map.of("error", "請先到個人資料設定 AI API"));
         }
 
@@ -95,7 +98,8 @@ public class AiConversationController {
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "請先登入"));
         }
-        if (!Boolean.TRUE.equals(user.getApiEnabled()) || user.getApiKey() == null) {
+        boolean isOllama2 = "ollama".equalsIgnoreCase(user.getApiProvider() != null ? user.getApiProvider() : "");
+        if (!Boolean.TRUE.equals(user.getApiEnabled()) || (!isOllama2 && user.getApiKey() == null)) {
             return ResponseEntity.badRequest().body(Map.of("error", "請先到個人資料設定 AI API"));
         }
 

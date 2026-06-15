@@ -4,8 +4,11 @@ import com.primaryenglish.entity.*;
 import com.primaryenglish.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 
 @Component
@@ -15,20 +18,18 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired private VocabularyRepository vocabRepo;
     @Autowired private ArticleRepository articleRepo;
 
+    @Autowired
+    private DataSource dataSource;
+
     @Override
-    public void run(String... args) {
-        initCategories();
-        initVocabularies(); // keep existing
+    public void run(String... args) throws Exception {
+        // 若資料庫為空，自動執行 data.sql 初始化分類與單字資料
+        if (categoryRepo.count() == 0) {
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            populator.addScript(new ClassPathResource("data.sql"));
+            populator.execute(dataSource);
+        }
         initArticles();
-    }
-
-    private void initCategories() {
-        if (categoryRepo.count() > 0) return;
-        // ... existing categories
-    }
-
-    private void initVocabularies() {
-        // existing vocabulary init (or skip if already in data.sql)
     }
 
     private void initArticles() {

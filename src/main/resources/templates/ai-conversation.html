@@ -618,6 +618,18 @@
         }
 
         function addAiBubble(english, chinese, hint) {
+            // 清理 english：移除 CHINESE: 之後的內容（AI 有時會把中文混入英文區塊）
+            let cleanEnglish = english;
+            const chineseIdx = cleanEnglish.toUpperCase().indexOf('CHINESE:');
+            if (chineseIdx > 0) {
+                cleanEnglish = cleanEnglish.substring(0, chineseIdx).trim();
+            }
+            // 也清理 HINT: 之後的內容
+            const hintIdx = cleanEnglish.toUpperCase().indexOf('HINT:');
+            if (hintIdx > 0) {
+                cleanEnglish = cleanEnglish.substring(0, hintIdx).trim();
+            }
+
             const container = document.getElementById('chatContainer');
             const div = document.createElement('div');
             div.className = 'chat-bubble ai';
@@ -625,11 +637,11 @@
                 '<div class="bubble-meta">' +
                 '  <span>🤖</span><span>AI 老師</span>' +
                 '</div>' +
-                '<div class="bubble-text">' + escapeHtml(english) + '</div>' +
+                '<div class="bubble-text">' + escapeHtml(cleanEnglish) + '</div>' +
                 (chinese ? '<div class="bubble-translation">📝 ' + escapeHtml(chinese) + '</div>' : '') +
                 (hint ? '<div class="bubble-hint">💡 ' + escapeHtml(hint) + '</div>' : '') +
                 '<button class="speak-bubble-btn" title="朗讀" onclick="window.speak(\'' +
-                escapeJs(english) + '\', \'en-US\')">' +
+                escapeJs(cleanEnglish) + '\', \'en-US\')">' +
                 '  <i class="ti ti-volume"></i>' +
                 '</button>';
             container.appendChild(div);

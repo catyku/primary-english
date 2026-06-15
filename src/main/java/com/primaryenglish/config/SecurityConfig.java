@@ -21,13 +21,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .anonymous(anonymous -> anonymous.principal("anonymous"))
             .authorizeHttpRequests(auth -> auth
                 // 靜態資源與公開頁面
                 .requestMatchers("/", "/login", "/do-login", "/register", "/logout",
-                                 "/do-login", "/do-register",
+                                 "/do-register",
                                  "/vocabulary", "/quiz/**", "/reading/**",
-                                 "/css/**", "/js/**", "/images/**", "/fonts/**",
-                                 "/bootstrap.min.css", "/tabler-icons.min.css", "/css/**")
+                                 "/css/**", "/js/**", "/images/**", "/fonts/**")
                 .permitAll()
                 // AI 對話 API 需登入（必須在 /api/** 之前）
                 .requestMatchers("/api/ai-conversation/**")
@@ -48,6 +48,11 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
+                .permitAll()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/")
                 .permitAll()
             )
             .sessionManagement(session -> session

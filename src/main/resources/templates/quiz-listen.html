@@ -49,7 +49,7 @@
         <i class="ti ti-filter me-2"></i>
         <span th:if="${param.grade != null}" th:text="'年級篩選：國小' + ${param.grade} + '年級'"></span>
         <span th:if="${param.category != null}" th:text="'主題篩選'"></span>
-        <span class="text-muted">（共 <span th:text="${#lists.size(vocabularies)}">0</span> 題）</span>
+        <span class="text-muted">（共 <span id="vocabCount">0</span> 題）</span>
     </div>
 
     <!-- Quiz Container -->
@@ -92,21 +92,23 @@
         </div>
     </div>
 
+    <input type="hidden" id="vocabData" th:value="${vocabularies}" />
+
+    <script th:inline="javascript">
+        var quizVocabularies = /*[[${vocabularies}]]*/ [];
+    </script>
+
 </div>
 
-<script th:inline="javascript">
-    // Thymeleaf inline JavaScript - vocabularies data
-    var vocabData = /*[[${vocabularies}]]*/ [];
-</script>
-
 <script layout:fragment="scripts">
-    var vocabularies = [];
+    var vocabularies = (typeof quizVocabularies !== 'undefined') ? quizVocabularies : [];
     try {
-        if (vocabData && vocabData.length > 0) {
-            vocabularies = vocabData;
+        if (typeof vocabularies === 'string') {
+            vocabularies = JSON.parse(vocabularies);
         }
     } catch (e) {
-        console.error('讀取單字資料失敗:', e);
+        console.error('JSON parse failed:', e);
+        vocabularies = [];
     }
 
     var currentIndex = 0;
@@ -126,6 +128,10 @@
         }
 
         document.getElementById('total').textContent = vocabularies.length;
+        var vocabCountEl = document.getElementById('vocabCount');
+        if (vocabCountEl) {
+            vocabCountEl.textContent = vocabularies.length;
+        }
         showQuestion();
     }
 

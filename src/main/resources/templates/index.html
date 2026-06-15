@@ -46,7 +46,8 @@
                     <div class="category-img-wrapper position-relative" style="height: 120px; overflow: hidden;"
                          th:if="${cat.image != null}">
                         <img th:src="@{${cat.image}}" class="w-100 h-100 object-fit-cover"
-                             th:alt="${cat.name}" style="object-fit: cover;">
+                             th:alt="${cat.name}" style="object-fit: cover;"
+                             onerror="this.parentElement.style.display='none';">
                         <div class="position-absolute bottom-0 start-0 w-100 p-2"
                              style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
                             <span class="badge bg-white text-dark fw-bold">

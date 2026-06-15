@@ -115,7 +115,7 @@
                         </label>
                         <input type="text" name="apiModel" class="form-control bg-light"
                                th:value="${user.apiModel}" placeholder="使用預設模型">
-                        <small class="text-muted" id="defaultModelHint" th:text="${user.apiProvider != null ? '預設: ' + @{'moonshotai/kimi-k2-6-free'} : ''}"></small>
+                        <small class="text-muted" id="defaultModelHint" th:text="${user.apiProvider != null ? '預設: moonshotai/kimi-k2-6-free' : ''}"></small>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold">
@@ -128,7 +128,7 @@
                                 <i class="ti ti-eye" id="eyeIcon"></i>
                             </button>
                         </div>
-                        <small class="text-muted">目前: <span th:text="${user.apiKey != null ? '已設定（' + #strings.substring(user.apiKey, 0, 8) + '***）' : '未設定'}"></span></small>
+                        <small class="text-muted">目前: <span th:text="${user.apiKey != null && user.apiKey.length() >= 8 ? '已設定（' + #strings.substring(user.apiKey, 0, 8) + '***）' : (user.apiKey != null && user.apiKey.length() > 0 ? '已設定（' + user.apiKey + '***）' : '未設定')}"></span></small>
                     </div>
                 </div>
                 <div class="form-check mt-3">
@@ -168,7 +168,7 @@
 
     <script>
         const DEFAULT_MODELS = {
-            'ollama': 'gemma4:e4b',
+            'ollama': 'gemma4:e2b',
             'openrouter': 'moonshotai/kimi-k2-6-free',
             'gemini': 'gemini-2.0-flash-lite-001',
             'openai': 'gpt-4o-mini',

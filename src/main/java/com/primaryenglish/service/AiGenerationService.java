@@ -303,7 +303,7 @@ public class AiGenerationService {
 
     // ========== Ollama ==========
     private Mono<Article> callOllama(String key, String model, String system, String prompt, String difficulty) {
-        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e4b";
+        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e2b";
         String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
 
         WebClient client = WebClient.builder()
@@ -346,7 +346,7 @@ public class AiGenerationService {
     // ========== 預設模型列表 ==========
     public static List<Map<String, String>> getProviders() {
         return List.of(
-            Map.of("id", "ollama",   "name", "🦙 Ollama (本地)",    "defaultModel", "gemma4:e4b",
+            Map.of("id", "ollama",   "name", "🦙 Ollama (本地)",    "defaultModel", "gemma4:e2b",
                    "url", "http://10.0.0.186:11434"),
             Map.of("id", "openrouter", "name", "🌐 OpenRouter", "defaultModel", "moonshotai/kimi-k2-6-free",
                    "url", "https://openrouter.ai/keys"),

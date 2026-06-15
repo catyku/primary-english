@@ -78,7 +78,8 @@
                     <!-- Vocab Image -->
                     <div class="vocab-image-wrapper mb-3 text-center" th:if="${vocab.image != null}">
                         <img th:src="@{${vocab.image}}" class="rounded-3 shadow-sm" style="max-height: 120px; width: auto;"
-                             th:alt="${vocab.english}">
+                             th:alt="${vocab.english}"
+                             onerror="this.parentElement.style.display='none';">
                     </div>
                     <hr class="my-3 opacity-50">
                     <div class="example-section">

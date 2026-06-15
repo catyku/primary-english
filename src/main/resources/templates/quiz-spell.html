@@ -95,18 +95,23 @@
         </div>
     </div>
 
+    <input type="hidden" id="vocabData" th:value="${vocabularies}" />
+
+    <script th:inline="javascript">
+        var quizVocabularies = /*[[${vocabularies}]]*/ [];
+    </script>
+
 </div>
 
 <script layout:fragment="scripts">
-    // 詞彙資料
-    var vocabularies = [];
+    var vocabularies = (typeof quizVocabularies !== 'undefined') ? quizVocabularies : [];
     try {
-        var rawData = /*[[${vocabularies}]]*/ [];
-        if (rawData && rawData.length > 0) {
-            vocabularies = rawData;
+        if (typeof vocabularies === 'string') {
+            vocabularies = JSON.parse(vocabularies);
         }
     } catch (e) {
-        console.error('Thymeleaf inline data failed:', e);
+        console.error('JSON parse failed:', e);
+        vocabularies = [];
     }
 
     var currentIndex = 0;

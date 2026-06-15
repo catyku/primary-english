@@ -1,9 +1,10 @@
 package com.primaryenglish.controller;
 
-import com.primaryenglish.entity.Category;
 import com.primaryenglish.entity.Vocabulary;
 import com.primaryenglish.repository.CategoryRepository;
 import com.primaryenglish.repository.VocabularyRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +17,14 @@ public class QuizController {
 
     private final VocabularyRepository vocabularyRepository;
     private final CategoryRepository categoryRepository;
+    private final ObjectMapper objectMapper;
 
-    public QuizController(VocabularyRepository vocabularyRepository, CategoryRepository categoryRepository) {
+    public QuizController(VocabularyRepository vocabularyRepository,
+                          CategoryRepository categoryRepository,
+                          ObjectMapper objectMapper) {
         this.vocabularyRepository = vocabularyRepository;
         this.categoryRepository = categoryRepository;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/quiz/listen")
@@ -27,7 +32,7 @@ public class QuizController {
                                  @RequestParam(name = "grade", required = false) String grade,
                                  Model model) {
         List<Vocabulary> vocabularies = getVocabularies(categoryId, grade);
-        model.addAttribute("vocabularies", vocabularies);
+        model.addAttribute("vocabularies", toSimpleMaps(vocabularies));
         model.addAttribute("quizType", "聽力測驗");
         model.addAttribute("quizIcon", "ti-headphones");
         return "quiz-listen";
@@ -38,10 +43,27 @@ public class QuizController {
                                 @RequestParam(name = "grade", required = false) String grade,
                                 Model model) {
         List<Vocabulary> vocabularies = getVocabularies(categoryId, grade);
-        model.addAttribute("vocabularies", vocabularies);
+        model.addAttribute("vocabularies", toSimpleMaps(vocabularies));
         model.addAttribute("quizType", "拼字測驗");
         model.addAttribute("quizIcon", "ti-pencil");
         return "quiz-spell";
+    }
+
+    private List<Map<String, Object>> toSimpleMaps(List<Vocabulary> vocabularies) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Vocabulary v : vocabularies) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", v.getId());
+            map.put("english", v.getEnglish());
+            map.put("chinese", v.getChinese());
+            map.put("phonetic", v.getPhonetic());
+            map.put("exampleEn", v.getExampleEn());
+            map.put("exampleCn", v.getExampleCn());
+            map.put("grade", v.getGrade());
+            map.put("image", v.getImage());
+            result.add(map);
+        }
+        return result;
     }
 
     private List<Vocabulary> getVocabularies(Long categoryId, String grade) {

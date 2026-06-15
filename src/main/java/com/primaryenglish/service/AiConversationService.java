@@ -222,7 +222,7 @@ public class AiConversationService {
     }
 
     private Mono<String> callOllama(String key, String model, List<Map<String, Object>> messages) {
-        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e4b";
+        String chosenModel = (model != null && !model.isBlank()) ? model : "gemma4:e2b";
         String baseUrl = (key != null && !key.isBlank() && key.startsWith("http")) ? key.trim() : "http://10.0.0.186:11434";
 
         WebClient client = WebClient.builder()
