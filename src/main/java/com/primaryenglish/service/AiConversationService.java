@@ -16,38 +16,54 @@ public class AiConversationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AiConversationService.class);
     private final AiConfigResolver aiConfigResolver;
+    private final Random random = new Random();
+
+    /**
+     * 各年級主題池，用於隨機指定主題（避免 AI 總是選動物）
+     */
+    private static final Map<Integer, List<String>> GRADE_TOPICS = Map.of(
+        3, List.of("數字", "顏色", "動物", "水果", "家庭成員", "基本動作", "情緒表情"),
+        4, List.of("學校生活", "食物飲料", "交通工具", "日常活動", "天氣季節", "身體部位", "衣服配件"),
+        5, List.of("運動比賽", "旅遊景點", "節日活動", "購物場所", "職業工作", "自然環境", "健康衛生"),
+        6, List.of("未來夢想", "科技產品", "環保議題", "社會公德", "文化差異", "故事創作", "團隊合作")
+    );
 
     public AiConversationService(AiConfigResolver aiConfigResolver) {
         this.aiConfigResolver = aiConfigResolver;
     }
 
     /**
-     * 開始新對話：AI 選定主題，提出第一個問題
+     * 開始新對話：隨機選定主題，AI 提出第一個問題
      */
     public Mono<Map<String, Object>> startConversation(User user, int grade, String difficulty, List<String> learnedWords) {
         logger.info("Starting conversation for user: {}, grade: {}, difficulty: {}", user.getUsername(), grade, difficulty);
         
-        String topicPool = buildTopicPool(learnedWords);
-        String systemPrompt = buildSystemPrompt(grade, difficulty);
+        // 從該年級主題池中隨機選擇一個主題（不再讓 AI 自己選，避免總是動物）
+        String assignedTopic = pickRandomTopic(grade);
+        logger.info("Assigned topic for grade {}: {}", grade, assignedTopic);
         
-        // 根據年級給予不同的主題傾向引導
-        String gradeTopicGuide = buildGradeTopicGuide(grade);
+        String systemPrompt = buildSystemPrompt(grade, difficulty, assignedTopic);
         
-        String userPrompt = "請先選擇一個有趣的主題（從我學過的單字相關主題中挑選），然後用英文跟我打招呼並提出第一個簡單的問題。\n\n" +
-            "我學過的單字主題範圍：" + (topicPool.isEmpty() ? gradeTopicGuide : topicPool) +
-            "\n\n輸出格式：\n" +
-            "TOPIC: [繁體中文主題名稱]\n" +
+        String userPrompt = "今天我們的主題是「" + assignedTopic + "」。\n\n" +
+            "請用英文跟我打招呼並提出第一個簡單的問題，讓我可以輕鬆回答。\n\n" +
+            "輸出格式：\n" +
+            "TOPIC: " + assignedTopic + "\n" +
             "ENGLISH: [英文問候+問題，2-3句，使用國小程度單字]\n" +
             "CHINESE: [中文翻譯]\n" +
             "\n注意：\n" +
             "1. ENGLISH 只能用國小" + grade + "年級學生聽得懂的單字\n" +
             "2. 問題要開放式，讓我有機會用英文回答\n" +
-            "3. 用繁體中文寫 TOPIC 和 CHINESE";
+            "3. 用繁體中文寫 CHINESE";
 
         return callAi(user, systemPrompt, userPrompt)
             .doOnNext(response -> logger.debug("AI start conversation response: {}", response))
             .doOnError(error -> logger.error("AI start conversation failed: {}", error.getMessage(), error))
-            .map(this::parseStartResponse);
+            .map(this::parseStartResponse)
+            .map(result -> {
+                // 強制覆蓋主題：不論 AI 回什麼，都用我們隨機指定的主題
+                result.put("topic", assignedTopic);
+                return result;
+            });
     }
 
     /**
@@ -55,7 +71,7 @@ public class AiConversationService {
      */
     public Mono<Map<String, Object>> continueConversation(User user, String topic, int grade, String difficulty,
                                                             List<Map<String, Object>> history, String userMessage) {
-        String systemPrompt = buildSystemPrompt(grade, difficulty);
+        String systemPrompt = buildSystemPrompt(grade, difficulty, topic);
 
         // 組裝 messages
         List<Map<String, Object>> messages = new ArrayList<>();
@@ -256,7 +272,11 @@ public class AiConversationService {
             "model", chosenModel,
             "messages", messages,
             "stream", false,
-            "options", Map.of("temperature", 0.85)
+            "options", Map.of(
+                "temperature", 0.9,
+                "top_p", 0.95,
+                "num_ctx", 8192
+            )
         );
        
         return client.post()
@@ -311,7 +331,7 @@ public class AiConversationService {
 
     // ========== 提示詞 ==========
 
-    private String buildSystemPrompt(int grade, String difficulty) {
+    private String buildSystemPrompt(int grade, String difficulty, String topic) {
         String diffDesc = switch (difficulty) {
             case "easy"   -> "非常基礎，只用最簡單的國小單字和短句";
             case "hard"   -> "稍微有挑戰，可用複合句，但仍是國小程度";
@@ -319,9 +339,10 @@ public class AiConversationService {
         };
 
         return "你是一位親切、有耐心的台灣國小英文老師。你的任務是透過輕鬆的英文對話，幫助國小" + grade + "年級學生練習英文口說。\n\n" +
+            "本次對話主題：「" + topic + "」。所有問題和回應都必須圍繞這個主題，不能離題。\n\n" +
             "難度要求：" + diffDesc + "\n\n" +
             "對話原則：\n" +
-            "1. 主題由你決定，選擇和學生生活相關、有趣的主題\n" +
+            "1. 主題固定為「" + topic + "」，所有對話內容必須與此主題相關\n" +
             "2. 盡量使用學生已學過的單字\n" +
             "3. 每次只說 2-4 句英文，不要太長\n" +
             "4. 先稱讚學生的回答，再溫柔地修正錯誤（如果有的話）\n" +
@@ -334,12 +355,20 @@ public class AiConversationService {
     /**
      * 根據年級提供不同的主題建議，避免 AI 總是選擇「動物」
      */
+    private String pickRandomTopic(int grade) {
+        List<String> topics = GRADE_TOPICS.getOrDefault(grade, GRADE_TOPICS.get(3));
+        return topics.get(random.nextInt(topics.size()));
+    }
+
+    /**
+     * 根據年級提供不同的主題建議（保留給已學單字參考）
+     */
     private String buildGradeTopicGuide(int grade) {
         return switch (grade) {
-            case 3 -> "國小三四年級基礎主題（請優先選擇）：數字、顏色、動物、水果、家庭成員、基本動作（跑跳走）、情緒表情";
-            case 4 -> "國小四年級主題（請優先選擇）：學校生活、食物飲料、交通工具、日常活動、天氣季節、身體部位、衣服配件";
-            case 5 -> "國小五年級主題（請優先選擇）：運動比賽、旅遊景點、節日活動、購物場所、職業工作、自然環境、健康衛生";
-            case 6 -> "國小六年級主題（請優先選擇）：未來夢想、科技產品、環保議題、社會公德、文化差異、故事創作、團隊合作";
+            case 3 -> "國小三四年級基礎主題：數字、顏色、動物、水果、家庭成員、基本動作、情緒表情";
+            case 4 -> "國小四年級主題：學校生活、食物飲料、交通工具、日常活動、天氣季節、身體部位、衣服配件";
+            case 5 -> "國小五年級主題：運動比賽、旅遊景點、節日活動、購物場所、職業工作、自然環境、健康衛生";
+            case 6 -> "國小六年級主題：未來夢想、科技產品、環保議題、社會公德、文化差異、故事創作、團隊合作";
             default -> "國小基礎英文（數字、顏色、動物、食物、家庭、學校、天氣、運動...）";
         };
     }
