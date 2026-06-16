@@ -360,62 +360,7 @@ public class AiConversationService {
         return topics.get(random.nextInt(topics.size()));
     }
 
-    /**
-     * 根據年級提供不同的主題建議（保留給已學單字參考）
-     */
-    private String buildGradeTopicGuide(int grade) {
-        return switch (grade) {
-            case 3 -> "國小三四年級基礎主題：數字、顏色、動物、水果、家庭成員、基本動作、情緒表情";
-            case 4 -> "國小四年級主題：學校生活、食物飲料、交通工具、日常活動、天氣季節、身體部位、衣服配件";
-            case 5 -> "國小五年級主題：運動比賽、旅遊景點、節日活動、購物場所、職業工作、自然環境、健康衛生";
-            case 6 -> "國小六年級主題：未來夢想、科技產品、環保議題、社會公德、文化差異、故事創作、團隊合作";
-            default -> "國小基礎英文（數字、顏色、動物、食物、家庭、學校、天氣、運動...）";
-        };
-    }
-
-    /**
-     * 根據已學單字，推測可能的主題池
-     */
-    private String buildTopicPool(List<String> learnedWords) {
-        if (learnedWords == null || learnedWords.isEmpty()) {
-            return "";
-        }
-        // 簡單歸類
-        Map<String, List<String>> topics = new LinkedHashMap<>();
-        topics.put("動物", new ArrayList<>());
-        topics.put("食物", new ArrayList<>());
-        topics.put("家庭", new ArrayList<>());
-        topics.put("學校", new ArrayList<>());
-        topics.put("顏色", new ArrayList<>());
-        topics.put("數字", new ArrayList<>());
-        topics.put("天氣", new ArrayList<>());
-        topics.put("運動", new ArrayList<>());
-        topics.put("身體", new ArrayList<>());
-        topics.put("衣服", new ArrayList<>());
-
-        for (String w : learnedWords) {
-            String wl = w.toLowerCase();
-            if (List.of("dog","cat","bird","fish","rabbit","elephant","lion","tiger","bear","monkey","panda","duck","chicken","pig","cow","horse","sheep","snake","frog","mouse","bee","butterfly").contains(wl)) topics.get("動物").add(w);
-            else if (List.of("apple","banana","rice","bread","noodle","egg","milk","water","juice","cake","candy","chocolate","pizza","hamburger","ice cream","meat","fish","chicken","soup","tea","coffee").contains(wl)) topics.get("食物").add(w);
-            else if (List.of("mother","father","sister","brother","grandmother","grandfather","family","parent","baby","uncle","aunt","cousin").contains(wl)) topics.get("家庭").add(w);
-            else if (List.of("teacher","student","classroom","school","book","pencil","pen","eraser","ruler","bag","desk","chair","blackboard","homework","class","lesson","subject","math","english","chinese","science","music","art","sport").contains(wl)) topics.get("學校").add(w);
-            else if (List.of("red","blue","green","yellow","orange","purple","pink","black","white","brown","gray","gold","silver").contains(wl)) topics.get("顏色").add(w);
-            else if (List.of("one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","twenty","thirty","hundred","first","second","third").contains(wl)) topics.get("數字").add(w);
-            else if (List.of("sunny","rainy","cloudy","windy","snowy","hot","cold","warm","cool","weather","sun","rain","snow","wind","cloud","storm","fog").contains(wl)) topics.get("天氣").add(w);
-            else if (List.of("run","jump","swim","dance","sing","draw","play","ball","basketball","football","baseball","game","sport","exercise","walk","ride","skate","ski").contains(wl)) topics.get("運動").add(w);
-            else if (List.of("head","eye","ear","nose","mouth","face","hair","hand","arm","leg","foot","body","tooth","finger","toe","neck","shoulder","knee").contains(wl)) topics.get("身體").add(w);
-            else if (List.of("shirt","pants","dress","skirt","shoes","socks","hat","cap","coat","jacket","sweater","uniform","gloves","scarf","boots","shorts","t-shirt").contains(wl)) topics.get("衣服").add(w);
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, List<String>> entry : topics.entrySet()) {
-            if (!entry.getValue().isEmpty()) {
-                if (sb.length() > 0) sb.append("、");
-                sb.append(entry.getKey()).append("(").append(entry.getValue().size()).append("個)");
-            }
-        }
-        return sb.toString();
-    }
+    
 
     // ========== 解析回應 ==========
 

@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "name": "flyway.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable Flyway-like database migration for SQLite."
+    },
+    {
+      "name": "flyway.locations",
+      "type": "java.lang.String",
+      "description": "Locations of migration scripts."
+    },
+    {
+      "name": "flyway.baseline-on-migrate",
+      "type": "java.lang.Boolean",
+      "description": "Whether to automatically call baseline when migrations are found for non-empty schemas."
+    },
+    {
+      "name": "flyway.baseline-version",
+      "type": "java.lang.Integer",
+      "description": "The version to tag an existing schema with when executing baseline."
+    },
+    {
+      "name": "ai.user-model-selection.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Allow users to customize AI model in profile."
+    },
+    {
+      "name": "ai.default-model.provider",
+      "type": "java.lang.String",
+      "description": "Default AI provider (e.g., ollama)."
+    },
+    {
+      "name": "ai.default-model.model",
+      "type": "java.lang.String",
+      "description": "Default AI model name."
+    },
+    {
+      "name": "ai.default-model.url",
+      "type": "java.lang.String",
+      "description": "Default AI service URL."
+    }
+  ]
+}

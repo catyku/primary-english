@@ -3,7 +3,6 @@ package com.primaryenglish.service;
 import com.primaryenglish.config.AiDefaultModelConfig;
 import com.primaryenglish.config.AiUserModelSelectionConfig;
 import com.primaryenglish.entity.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,7 +17,7 @@ public class AiConfigResolver {
     private final AiDefaultModelConfig defaultConfig;
     private final AiUserModelSelectionConfig userModelSelectionConfig;
 
-    @Autowired
+   
     public AiConfigResolver(AiDefaultModelConfig defaultConfig,
                             AiUserModelSelectionConfig userModelSelectionConfig) {
         this.defaultConfig = defaultConfig;
