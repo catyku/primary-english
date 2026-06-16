@@ -202,7 +202,12 @@ async function sendMessage() {
         const response = await fetch('/api/ai-conversation/message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic: currentTopic, history: history })
+            body: JSON.stringify({ 
+                topic: currentTopic, 
+                history: history,
+                grade: document.getElementById('gradeSelect').value,
+                difficulty: document.getElementById('difficultySelect').value
+            })
         });
 
         if (!response.ok) throw new Error(`伺服器錯誤: ${response.status}`);

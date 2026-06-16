@@ -2,6 +2,7 @@ package com.primaryenglish.controller;
 
 import com.primaryenglish.entity.User;
 import com.primaryenglish.entity.UserVocabProgress;
+import com.primaryenglish.service.AiConfigResolver;
 import com.primaryenglish.service.AiConversationService;
 import com.primaryenglish.service.ProgressService;
 import com.primaryenglish.service.UserService;
@@ -20,13 +21,16 @@ public class AiConversationController {
     private final AiConversationService aiConversationService;
     private final UserService userService;
     private final ProgressService progressService;
+    private final AiConfigResolver aiConfigResolver;
 
     public AiConversationController(AiConversationService aiConversationService,
                                      UserService userService,
-                                     ProgressService progressService) {
+                                     ProgressService progressService,
+                                     AiConfigResolver aiConfigResolver) {
         this.aiConversationService = aiConversationService;
         this.userService = userService;
         this.progressService = progressService;
+        this.aiConfigResolver = aiConfigResolver;
     }
 
     private User getCurrentUser(HttpSession session) {
@@ -44,6 +48,10 @@ public class AiConversationController {
         if (user == null) {
             return "redirect:/login";
         }
+        
+        // 解析 AI 配置（自動填入預設值）
+        aiConfigResolver.resolve(user);
+        
         model.addAttribute("user", user);
         boolean isOllama = "ollama".equalsIgnoreCase(user.getApiProvider() != null ? user.getApiProvider() : "");
         model.addAttribute("apiEnabled", Boolean.TRUE.equals(user.getApiEnabled())
