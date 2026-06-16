@@ -1,6 +1,6 @@
 #!/bin/bash
 # Primary English Vocabulary Learning System 啟動腳本
-
+pkill -9 -f "java.*primary-english" >/dev/null 2>&1
 APP_NAME="primary-english"
 JAR_FILE="primary-english-1.0.0.jar"
 APP_HOME="$(cd "$(dirname "$0")" && pwd)"
